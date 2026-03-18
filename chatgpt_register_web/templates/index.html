@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChatGPT 注册机</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --left-w: 300px;
+  --blue: #007AFF;
+  --green: #34C759;
+  --red: #FF3B30;
+  --orange: #FF9500;
+  --bg: #F2F2F7;
+  --card-bg: #FFFFFF;
+  --left-bg: #FFFFFF;
+  --text-primary: #1C1C1E;
+  --text-secondary: #6C6C70;
+  --text-tertiary: #AEAEB2;
+  --separator: rgba(60,60,67,0.13);
+  --radius-card: 12px;
+  --radius-btn: 8px;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05);
+  --font: -apple-system, "SF Pro Display", BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "SF Mono", "Fira Code", Consolas, monospace;
+  --transition: 0.15s ease;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-primary);
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ─── Layout ─── */
+.app-layout {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ─── Left Panel ─── */
+.left-panel {
+  width: var(--left-w);
+  min-width: var(--left-w);
+  background: var(--left-bg);
+  border-right: 1px solid var(--separator);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.left-header {
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid var(--separator);
+  flex-shrink: 0;
+}
+
+.app-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.app-version {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.left-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.left-body::-webkit-scrollbar { width: 4px; }
+.left-body::-webkit-scrollbar-thumb { background: var(--separator); border-radius: 2px; }
+
+.left-footer {
+  padding: 14px 16px;
+  border-top: 1px solid var(--separator);
+  flex-shrink: 0;
+}
+
+/* ─── Settings Sections ─── */
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-group label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.field-row {
+  display: flex;
+  gap: 8px;
+}
+
+.field-row .field-group { flex: 1; }
+
+/* ─── Inputs ─── */
+input[type="text"], input[type="number"], input[type="url"], input[type="password"],
+select {
+  padding: 7px 10px;
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-btn);
+  font-size: 13px;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  width: 100%;
+}
+
+input:focus, select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(0,122,255,0.12);
+}
+
+/* ─── OAuth collapsible ─── */
+.collapsible-section { display: flex; flex-direction: column; gap: 8px; }
+
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 0;
+}
+
+.collapsible-header:hover .section-label { color: var(--blue); }
+
+.collapse-arrow {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  transition: transform var(--transition);
+}
+
+.collapsible-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.25s ease;
+}
+
+.collapsible-body.open { max-height: 300px; }
+
+/* ─── Buttons ─── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: var(--radius-btn);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--transition), transform 0.1s;
+  white-space: nowrap;
+  font-family: var(--font);
+}
+
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+.btn-full { width: 100%; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-success { background: var(--green); color: #fff; }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-secondary { background: rgba(60,60,67,0.10); color: var(--text-primary); }
+.btn-sm { padding: 5px 11px; font-size: 12px; }
+
+/* ─── Right Panel ─── */
+.right-panel {
+  flex: 1;
+  overflow: hidden;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* ─── Cards ─── */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-card);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ─── Pool Status ─── */
+.pool-status-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pool-main-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.pool-type-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--blue);
+  background: rgba(0,122,255,0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.pool-count-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.pool-pct {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.progress-wrap {
+  background: var(--separator);
+  border-radius: 999px;
+  height: 6px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--blue);
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+.progress-bar.green { background: var(--green); }
+
+.pool-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.pool-meta b { color: var(--text-primary); }
+
+/* ─── Maintenance Card ─── */
+.maint-section {
+  padding: 14px 0;
+}
+
+.maint-section:first-child { padding-top: 0; }
+.maint-section:last-child { padding-bottom: 0; }
+
+.maint-section + .maint-section {
+  border-top: 1px solid var(--separator);
+}
+
+.maint-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* Inspect state machine */
+.inspect-result-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border-radius: 8px;
+}
+
+.result-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.result-item b { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+.result-item.red b { color: var(--red); }
+.result-item.green b { color: var(--green); }
+.result-item.orange b { color: var(--orange); }
+
+.inspect-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.no-gap-msg {
+  font-size: 13px;
+  color: var(--green);
+  font-weight: 600;
+  padding: 4px 0;
+}
+
+.running-status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(0,122,255,0.06);
+  border-radius: 8px;
+}
+
+/* ─── Spinner ─── */
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0,122,255,0.2);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Daemon section ─── */
+.daemon-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.toggle-wrap { display: flex; align-items: center; gap: 8px; }
+
+.toggle {
+  width: 40px;
+  height: 24px;
+  background: var(--text-tertiary);
+  border-radius: 999px;
+  cursor: pointer;
+  position: relative;
+  transition: background var(--transition);
+  flex-shrink: 0;
+}
+
+.toggle.on { background: var(--green); }
+.toggle.transitioning { opacity: 0.6; pointer-events: none; }
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: left var(--transition);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle.on::after { left: 18px; }
+
+.daemon-interval-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.daemon-interval-wrap input { width: 72px; }
+
+.countdown-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(0,122,255,0.06);
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.countdown-label { font-size: 12px; color: var(--text-secondary); }
+
+.countdown-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  font-family: var(--font-mono);
+  min-width: 55px;
+}
+
+/* ─── Badges ─── */
+.badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-green { background: rgba(52,199,89,0.15); color: var(--green); }
+.badge-orange { background: rgba(255,149,0,0.15); color: var(--orange); }
+.badge-gray { background: rgba(60,60,67,0.1); color: var(--text-secondary); }
+.badge-blue { background: rgba(0,122,255,0.15); color: var(--blue); }
+.badge-purple { background: rgba(175,82,222,0.15); color: #af52de; }
+
+/* ─── Log Box ─── */
+/* ─── Top Row (池状态 + 维护操作 同行) ─── */
+.top-row { display: flex; gap: 12px; align-items: stretch; flex-shrink: 0; flex-wrap: wrap; }
+.pool-card { flex: 0 0 260px; }
+.maint-card { flex: 1; min-width: 160px; }
+
+/* ─── Accounts List ─── */
+.accounts-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 6px 0 2px;
+}
+
+.accounts-toolbar-left {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.accounts-toolbar-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1 1 360px;
+  min-width: 0;
+}
+
+.pager-cluster,
+.pager-select-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 5px 8px;
+  border: 1px solid var(--separator);
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.pager-jump {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pager-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.pager-input {
+  width: 78px;
+  padding: 5px 8px !important;
+  font-size: 12px !important;
+  text-align: center;
+}
+
+.pager-select {
+  width: 112px;
+  padding: 5px 8px !important;
+  font-size: 12px !important;
+}
+
+.pager-total {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.accounts-table-wrap { overflow-x: auto; overflow-y: auto; max-height: 300px; margin-top: 8px; }
+.accounts-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.accounts-table thead th {
+  position: sticky; top: 0;
+  background: var(--card-bg);
+  z-index: 1;
+}
+.accounts-table th, .accounts-table td {
+  text-align: left;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--separator);
+}
+.accounts-table th { color: var(--text-secondary); font-weight: 600; font-size: 11px; text-transform: uppercase; }
+.accounts-table td { color: var(--text-primary); font-family: var(--font-mono); }
+.accounts-table tr:last-child td { border-bottom: none; }
+
+@media (max-width: 720px) {
+  .accounts-toolbar {
+    align-items: stretch;
+  }
+
+  .accounts-toolbar-left,
+  .accounts-toolbar-right {
+    flex-basis: 100%;
+    width: 100%;
+  }
+
+  .accounts-toolbar-right {
+    justify-content: stretch;
+  }
+
+  .pager-cluster,
+  .pager-select-wrap {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ─── Log Card fills remaining space ─── */
+#log-card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#log-card .card-header { flex-shrink: 0; }
+
+.log-box {
+  background: #1a1a1a;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.65;
+  color: #d4d4d4;
+  flex: 1;
+  min-height: 80px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.log-box::-webkit-scrollbar { width: 4px; }
+.log-box::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+
+.log-line { padding: 0; }
+.log-line.ok { color: #89d185; }
+.log-line.err { color: #f48771; }
+.log-line.warn { color: #dcdcaa; }
+.log-line.info { color: #9cdcfe; }
+.log-placeholder { color: #555; }
+
+/* ─── Status indicator dot ─── */
+.daemon-status-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.daemon-status-text.on { color: var(--green); font-weight: 600; }
+
+/* ─── Save button feedback ─── */
+.save-success { color: var(--green) !important; }
+.save-error { color: var(--red) !important; }
+</style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- ══════════════════════════════════════════
+       左栏：设置面板
+  ══════════════════════════════════════════ -->
+  <aside class="left-panel">
+    <div class="left-header">
+      <div class="app-name">ChatGPT 注册机</div>
+    </div>
+
+    <div class="left-body">
+
+      <!-- DuckMail 配置 -->
+      <div class="settings-section">
+        <div class="section-label">DuckMail 配置</div>
+        <div class="field-group">
+          <label>API Base</label>
+          <input type="url" id="cfg-duckmail-base" placeholder="https://api.duckmail.sbs">
+        </div>
+        <div class="field-group">
+          <label>Bearer Token</label>
+          <input type="password" id="cfg-duckmail-bearer" placeholder="dk_xxxxx">
+        </div>
+      </div>
+
+      <!-- CliProxyAPI 配置 -->
+      <div class="settings-section">
+        <div class="section-label">CliProxyAPI</div>
+        <div class="field-group">
+          <label>Base URL</label>
+          <input type="url" id="cfg-pool-url" placeholder="https://your-proxy.example.com">
+        </div>
+        <div class="field-group">
+          <label>Token</label>
+          <input type="password" id="cfg-pool-token" placeholder="Bearer Token">
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>账号类型</label>
+            <input type="text" id="cfg-pool-type" value="codex" placeholder="codex">
+          </div>
+          <div class="field-group">
+            <label>目标数量</label>
+            <input type="number" id="cfg-pool-target" value="100" min="1">
+          </div>
+        </div>
+      </div>
+
+      <!-- 注册配置 -->
+      <div class="settings-section">
+        <div class="section-label">注册配置</div>
+        <div class="field-group">
+          <label>代理地址（Fallback）</label>
+          <input type="text" id="cfg-proxy" placeholder="127.0.0.1:10808">
+        </div>
+        <div class="field-group">
+          <label>并发数</label>
+          <input type="number" id="cfg-workers" value="3" min="1" max="20">
+        </div>
+      </div>
+
+      <!-- OAuth 折叠 -->
+      <div class="settings-section collapsible-section">
+        <div class="collapsible-header" onclick="toggleOAuth()">
+          <div class="section-label" style="margin:0">OAuth 配置</div>
+          <span class="collapse-arrow" id="oauth-arrow">▸</span>
+        </div>
+        <div class="collapsible-body" id="oauth-body">
+          <div class="field-group">
+            <label>Issuer URL</label>
+            <input type="url" id="cfg-oauth-issuer" placeholder="https://auth.openai.com">
+          </div>
+          <div class="field-group">
+            <label>Client ID</label>
+            <input type="text" id="cfg-oauth-client-id">
+          </div>
+          <div class="field-group">
+            <label>Redirect URI</label>
+            <input type="url" id="cfg-oauth-redirect">
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /left-body -->
+
+    <div class="left-footer">
+      <button class="btn btn-primary btn-full" id="btn-save" onclick="saveSettings()">保存设置</button>
+    </div>
+  </aside>
+
+  <!-- ══════════════════════════════════════════
+       右栏：状态 + 操作
+  ══════════════════════════════════════════ -->
+  <main class="right-panel">
+
+    <!-- 池状态 + 维护操作 同行 -->
+    <div class="top-row">
+
+    <!-- 池状态卡片 -->
+    <div class="card pool-card">
+      <div class="card-header">
+        <div class="card-title">池状态</div>
+        <button class="btn btn-sm btn-secondary" id="btn-refresh-pool" onclick="refreshPoolStatus()">↻ 刷新</button>
+      </div>
+      <div class="pool-status-content">
+        <div class="pool-main-row">
+          <span class="pool-type-badge" id="pool-type-badge">codex</span>
+          <span class="pool-count-text">
+            <span id="pool-valid">—</span><span style="color:var(--text-tertiary);font-weight:400;font-size:16px">/</span><span id="pool-target-disp">—</span>
+          </span>
+          <span class="pool-pct" id="pool-pct"></span>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-bar green" id="pool-progress-bar"></div>
+        </div>
+        <div class="pool-meta">
+          <span>总账号: <b id="pool-total">—</b></span>
+          <span>失效: <b id="pool-invalid-disp">—</b></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 手动补号卡片 -->
+    <div class="card" style="flex:1;min-width:0">
+      <div class="card-title" style="margin-bottom:14px">手动补号</div>
+
+        <!-- idle: 显示 [开始检查] -->
+        <div id="inspect-idle">
+          <button class="btn btn-primary" id="btn-inspect" onclick="startInspect()">开始检查</button>
+        </div>
+
+        <!-- inspecting: spinner -->
+        <div id="inspect-inspecting" style="display:none">
+          <button class="btn btn-primary" disabled>
+            <span class="spinner"></span> 检查中...
+          </button>
+        </div>
+
+        <!-- inspected: 显示结果 -->
+        <div id="inspect-inspected" style="display:none">
+          <div class="inspect-result-row">
+            <span class="result-item red">失效 <b id="res-invalid">0</b></span>
+            <span class="result-item green">有效 <b id="res-valid">0</b></span>
+            <span class="result-item">目标 <b id="res-target">0</b></span>
+            <span class="result-item orange">缺口 <b id="res-gap">0</b></span>
+          </div>
+          <div id="inspect-no-gap" class="no-gap-msg" style="display:none">✓ 无需补号，池中账号充足</div>
+          <div id="inspect-actions" class="inspect-actions" style="display:none">
+            <button class="btn btn-success" id="btn-confirm-fill" onclick="confirmFill()">
+              确认补号 <span id="fill-count-badge">0</span> 个
+            </button>
+            <button class="btn btn-secondary" onclick="resetInspect()">取消</button>
+          </div>
+        </div>
+
+        <!-- running: 补号进行中 -->
+        <div id="inspect-running" style="display:none">
+          <div class="running-status-row">
+            <span class="spinner"></span>
+            <span id="running-msg" style="font-size:13px;color:var(--text-secondary)">处理中...</span>
+          </div>
+        </div>
+
+    </div><!-- /手动补号卡片 -->
+
+    <!-- 守护进程卡片 -->
+    <div class="card" style="flex:1;min-width:0">
+      <div class="card-title" style="margin-bottom:14px">守护进程</div>
+        <div class="daemon-row">
+          <div class="toggle-wrap">
+            <div class="toggle" id="daemon-toggle" onclick="toggleDaemon()"></div>
+            <span class="daemon-status-text" id="daemon-status-label">已停止</span>
+          </div>
+          <div class="daemon-interval-wrap">
+            每 <input type="number" id="daemon-interval" value="30" min="1"> 分钟执行一次
+          </div>
+        </div>
+        <div id="daemon-countdown-row" class="countdown-bar" style="display:none">
+          <span class="countdown-label">下次执行</span>
+          <span class="countdown-value" id="countdown-val">--:--</span>
+          <span class="badge badge-orange" id="daemon-running-badge" style="display:none">运行中</span>
+        </div>
+        <div id="daemon-last-run" style="font-size:12px;color:var(--text-tertiary);margin-top:6px">上次执行: —</div>
+
+    </div><!-- /守护进程卡片 -->
+
+    <!-- 仅注册卡片 -->
+    <div class="card maint-card">
+      <div class="card-title" style="margin-bottom:12px">仅注册</div>
+
+      <!-- idle: 注册按钮 -->
+      <div id="regonly-idle">
+        <button class="btn btn-primary" onclick="startRegOnly()">注册账号</button>
+      </div>
+
+      <!-- input: 数量输入 -->
+      <div id="regonly-input" style="display:none">
+        <div class="field-group" style="margin-bottom:10px">
+          <label>注册数量</label>
+          <input type="number" id="regonly-count" value="5" min="1" max="500">
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-success btn-sm" onclick="confirmRegOnly()">开始注册</button>
+          <button class="btn btn-secondary btn-sm" onclick="cancelRegOnly()">取消</button>
+        </div>
+      </div>
+
+      <!-- running: 进行中 -->
+      <div id="regonly-running" style="display:none">
+        <div class="running-status-row" style="margin-bottom:8px">
+          <span class="spinner"></span>
+          <span id="regonly-progress" style="font-size:13px;color:var(--text-secondary)">注册中...</span>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="stopRegOnly()">停止</button>
+      </div>
+
+      <!-- done: 结果 -->
+      <div id="regonly-done" style="display:none">
+        <div id="regonly-result" style="font-size:13px;margin-bottom:10px"></div>
+        <button class="btn btn-secondary btn-sm" onclick="resetRegOnly()">重置</button>
+      </div>
+    </div><!-- /仅注册卡片 -->
+
+    </div><!-- /top-row -->
+
+    <!-- 账号列表卡片 -->
+    <div class="card" id="accounts-card" style="flex-shrink:0">
+      <div class="card-header">
+        <div class="card-title">账号列表</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm btn-secondary" id="btn-refresh-accounts" onclick="refreshAccounts()">↻ 刷新</button>
+          <button class="btn btn-sm btn-secondary" id="btn-sync-accounts" onclick="doSync()">⇅ 同步</button>
+        </div>
+      </div>
+      <div class="accounts-toolbar" id="accounts-toolbar" style="display:none">
+        <div class="accounts-toolbar-left" id="accounts-count-label">—</div>
+        <div class="accounts-toolbar-right">
+          <div class="pager-cluster">
+            <button class="btn btn-sm btn-secondary" id="btn-accounts-prev" onclick="prevAccountsPage()">‹</button>
+            <div class="pager-jump">
+              <span class="pager-label">第</span>
+              <input class="pager-input" type="number" id="accounts-page-input" min="1" value="1"
+                     onkeydown="onAccountsPageKeydown(event)" onblur="onAccountsPageBlur()">
+              <span class="pager-total" id="accounts-page-total">共 — 页</span>
+            </div>
+            <button class="btn btn-sm btn-secondary" id="btn-accounts-next" onclick="nextAccountsPage()">›</button>
+          </div>
+          <div class="pager-select-wrap">
+            <span class="pager-label">每页</span>
+            <select class="pager-select" id="accounts-page-size" onchange="onAccountsPageSizeChange()">
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="200" selected>200</option>
+              <option value="500">500</option>
+              <option value="1000">1000</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="accounts-body">
+        <div id="accounts-loading" style="display:none;color:var(--text-tertiary);font-size:13px">加载中...</div>
+        <div class="accounts-table-wrap" id="accounts-table-wrap" style="display:none">
+          <table class="accounts-table">
+            <thead><tr><th>#</th><th>账号名称</th><th>类型</th><th>状态</th><th>位置</th></tr></thead>
+            <tbody id="accounts-tbody"></tbody>
+          </table>
+        </div>
+        <div id="accounts-empty" style="display:none;color:var(--text-tertiary);font-size:13px;padding:8px 0">暂无账号</div>
+      </div>
+    </div>
+
+    <!-- 实时日志卡片 -->
+    <div class="card" id="log-card">
+      <div class="card-header">
+        <div class="card-title">实时日志</div>
+        <button class="btn btn-sm btn-secondary" onclick="clearLog()">清空</button>
+      </div>
+      <div id="log-box" class="log-box">
+        <span class="log-placeholder">等待任务启动...</span>
+      </div>
+    </div>
+
+  </main><!-- /right-panel -->
+</div><!-- /app-layout -->
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// 状态变量
+// ════════════════════════════════════════════════════════════════
+let _inspectState = 'idle';   // idle | inspecting | inspected | running
+let _inspectResult = null;    // run_pool_inspect 返回的结果
+let _poolWs = null;
+let _regWs  = null;
+let _daemonLocalTimer = null; // 每秒递减倒计时
+let _daemonPollTimer = null;  // 每5秒同步后端
+
+// ════════════════════════════════════════════════════════════════
+// 工具函数
+// ════════════════════════════════════════════════════════════════
+function fmtSec(s) {
+  s = Math.max(0, Math.round(s));
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+
+// 已保存到服务端的配置（只在 loadSettings/saveSettings 成功后更新）
+let _savedConfig = { base_url: '', token: '', target_type: 'codex', target_count: 100, proxy: '' };
+
+function getPoolConfig() {
+  return { ..._savedConfig };
+}
+
+// 从服务端响应对象同步到 _savedConfig
+function _syncSavedConfig(d) {
+  _savedConfig = {
+    base_url:     (d.pool && d.pool.base_url)     || '',
+    token:        (d.pool && d.pool.token)         || '',
+    target_type:  (d.pool && d.pool.target_type)   || 'codex',
+    target_count: (d.pool && d.pool.target_count)  || 100,
+    proxy:        d.proxy || '',
+  };
+}
+
+// ════════════════════════════════════════════════════════════════
+// 日志
+// ════════════════════════════════════════════════════════════════
+const _LOG_MAX_LINES = 2000;
+const _LOG_RENDER_BATCH = 200;
+const _LOG_MAX_PENDING = 1500;
+let _logQueue = [];
+let _logFlushRAF = null;
+let _logDroppedPending = 0;
+
+function _isNearBottom(el, thresholdPx = 24) {
+  // scrollHeight may change after DOM updates; call before append
+  return (el.scrollHeight - el.scrollTop - el.clientHeight) < thresholdPx;
+}
+
+function _trimLogLines(box) {
+  // Keep only the last _LOG_MAX_LINES element children
+  const extra = box.children.length - _LOG_MAX_LINES;
+  if (extra <= 0) return;
+  for (let i = 0; i < extra; i++) {
+    const first = box.firstElementChild;
+    if (!first) break;
+    first.remove();
+  }
+}
+
+function _flushLogs() {
+  _logFlushRAF = null;
+  const box = document.getElementById('log-box');
+  if (!box) { _logQueue = []; return; }
+  if (_logDroppedPending > 0) {
+    _logQueue.unshift(`[WS] 前端渲染队列过长，已丢弃 ${_logDroppedPending} 条旧日志`);
+    _logDroppedPending = 0;
+  }
+  if (_logQueue.length === 0) return;
+
+  // 清除占位符
+  const ph = box.querySelector('.log-placeholder');
+  if (ph) ph.remove();
+
+  const wasAtBottom = _isNearBottom(box);
+  const prevScrollTop = box.scrollTop;
+  const frag = document.createDocumentFragment();
+
+  const batch = _logQueue.splice(0, _LOG_RENDER_BATCH);
+  for (const msg of batch) {
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    const m = String(msg || '').toLowerCase();
+    if (m.includes('[fail]') || m.includes('[error]') || m.includes('失败') || m.includes('异常')) {
+      line.classList.add('err');
+    } else if (m.includes('[ok]') || m.includes('成功') || m.includes('完成')) {
+      line.classList.add('ok');
+    } else if (m.includes('[pool]') || m.includes('[daemon]') || m.includes('[注册]')) {
+      line.classList.add('info');
+    } else if (m.includes('警告') || m.includes('warn')) {
+      line.classList.add('warn');
+    }
+    line.textContent = msg;
+    frag.appendChild(line);
+  }
+
+  box.appendChild(frag);
+  const afterAppendScrollHeight = box.scrollHeight;
+  _trimLogLines(box);
+
+  if (wasAtBottom) {
+    box.scrollTop = box.scrollHeight;
+  } else {
+    // 保持用户当前阅读位置：移除顶部行会导致内容上移，需要同步调整 scrollTop
+    const removedHeight = afterAppendScrollHeight - box.scrollHeight;
+    if (removedHeight > 0) box.scrollTop = Math.max(0, prevScrollTop - removedHeight);
+  }
+
+  if (_logQueue.length > 0) {
+    _logFlushRAF = requestAnimationFrame(_flushLogs);
+  }
+}
+
+function appendLog(msg) {
+  if (msg === undefined || msg === null) return;
+  _logQueue.push(msg);
+  if (_logQueue.length > _LOG_MAX_PENDING) {
+    const overflow = _logQueue.length - _LOG_MAX_PENDING;
+    _logQueue.splice(0, overflow);
+    _logDroppedPending += overflow;
+  }
+  if (_logFlushRAF == null) {
+    _logFlushRAF = requestAnimationFrame(_flushLogs);
+  }
+}
+
+function clearLog() {
+  const box = document.getElementById('log-box');
+  _logQueue = [];
+  if (_logFlushRAF != null) { cancelAnimationFrame(_logFlushRAF); _logFlushRAF = null; }
+  if (box) box.innerHTML = '<span class="log-placeholder">日志已清空</span>';
+}
+
+// ════════════════════════════════════════════════════════════════
+// WebSocket 连接
+// ════════════════════════════════════════════════════════════════
+function connectPoolWs() {
+  if (_poolWs && _poolWs.readyState === WebSocket.OPEN) return;
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  _poolWs = new WebSocket(`${proto}://${location.host}/ws/pool/logs`);
+  _poolWs.onopen = () => appendLog('[WS] 池日志连接已建立');
+  _poolWs.onmessage = (e) => {
+    try {
+      const d = JSON.parse(e.data);
+      if (d.type === 'log') appendLog(d.msg);
+    } catch {}
+  };
+  _poolWs.onerror = () => appendLog('[WS] 池日志连接异常');
+  _poolWs.onclose = () => {
+    _poolWs = null;
+    appendLog('[WS] 池日志连接断开，3秒后重连');
+    // 断线重连
+    setTimeout(connectPoolWs, 3000);
+  };
+}
+
+function connectRegWs() {
+  if (_regWs && _regWs.readyState <= WebSocket.OPEN) return;
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  _regWs = new WebSocket(`${proto}://${location.host}/ws/register/logs`);
+  _regWs.onmessage = (e) => {
+    try {
+      const d = JSON.parse(e.data);
+      if (d.type === 'log') appendLog(d.msg);
+    } catch {}
+  };
+  _regWs.onclose = () => { _regWs = null; };
+}
+
+function closeRegWs() {
+  if (_regWs) { _regWs.close(); _regWs = null; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// OAuth 折叠
+// ════════════════════════════════════════════════════════════════
+let _oauthOpen = false;
+
+function toggleOAuth() {
+  _oauthOpen = !_oauthOpen;
+  const body = document.getElementById('oauth-body');
+  const arrow = document.getElementById('oauth-arrow');
+  body.classList.toggle('open', _oauthOpen);
+  arrow.textContent = _oauthOpen ? '▾' : '▸';
+}
+
+// ════════════════════════════════════════════════════════════════
+// 设置：加载 & 保存
+// ════════════════════════════════════════════════════════════════
+async function loadSettings() {
+  try {
+    const r = await fetch('/api/config');
+    const d = await r.json();
+    _setVal('cfg-duckmail-base', d.duckmail_api_base);
+    _setVal('cfg-duckmail-bearer', d.duckmail_bearer);
+    _setVal('cfg-proxy', d.proxy);
+    _setVal('cfg-workers', d.workers || 3);
+    _setVal('cfg-oauth-issuer', d.oauth_issuer);
+    _setVal('cfg-oauth-client-id', d.oauth_client_id);
+    _setVal('cfg-oauth-redirect', d.oauth_redirect_uri);
+    if (d.pool) {
+      _setVal('cfg-pool-url', d.pool.base_url);
+      _setVal('cfg-pool-token', d.pool.token);
+      _setVal('cfg-pool-type', d.pool.target_type || 'codex');
+      _setVal('cfg-pool-target', d.pool.target_count || 100);
+    }
+    // 同步守护进程间隔
+    if (d.pool && d.pool.interval_min) {
+      _setVal('daemon-interval', d.pool.interval_min);
+    }
+    // 同步已保存配置（供 getPoolConfig() 使用）
+    _syncSavedConfig(d);
+  } catch (e) {
+    console.warn('加载配置失败', e);
+  }
+}
+
+function _setVal(id, val) {
+  const el = document.getElementById(id);
+  if (el && val !== undefined && val !== null) el.value = val;
+}
+
+async function saveSettings() {
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+
+  const prevTargetCount = _savedConfig.target_count;
+
+  const cfg = {
+    duckmail_api_base: document.getElementById('cfg-duckmail-base').value.trim(),
+    duckmail_bearer:   document.getElementById('cfg-duckmail-bearer').value.trim(),
+    proxy:   document.getElementById('cfg-proxy').value.trim(),
+    workers: parseInt(document.getElementById('cfg-workers').value) || 3,
+    oauth_issuer:      document.getElementById('cfg-oauth-issuer').value.trim(),
+    oauth_client_id:   document.getElementById('cfg-oauth-client-id').value.trim(),
+    oauth_redirect_uri: document.getElementById('cfg-oauth-redirect').value.trim(),
+    enable_oauth: true,
+    oauth_required: true,
+    pool: {
+      base_url:     document.getElementById('cfg-pool-url').value.trim(),
+      token:        document.getElementById('cfg-pool-token').value.trim(),
+      target_type:  document.getElementById('cfg-pool-type').value,
+      target_count: parseInt(document.getElementById('cfg-pool-target').value) || 100,
+      interval_min: parseInt(document.getElementById('daemon-interval').value) || 30,
+    },
+  };
+
+  try {
+    const r = await fetch('/api/config', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(cfg),
+    });
+    if (r.ok) {
+      // 保存成功后同步 _savedConfig，使前端操作立即使用新配置
+      _syncSavedConfig(cfg);
+      // 目标数量变化时刷新池状态（更新缺口显示）
+      if (_savedConfig.target_count !== prevTargetCount) {
+        refreshPoolStatus();
+      }
+      btn.textContent = '✓ 已保存';
+      btn.classList.add('save-success');
+      setTimeout(() => {
+        btn.textContent = '保存设置';
+        btn.classList.remove('save-success');
+        btn.disabled = false;
+      }, 2500);
+    } else {
+      const e = await r.json();
+      btn.textContent = '✗ 保存失败';
+      btn.classList.add('save-error');
+      setTimeout(() => {
+        btn.textContent = '保存设置';
+        btn.classList.remove('save-error');
+        btn.disabled = false;
+      }, 2500);
+    }
+  } catch {
+    btn.textContent = '✗ 网络错误';
+    btn.classList.add('save-error');
+    setTimeout(() => {
+      btn.textContent = '保存设置';
+      btn.classList.remove('save-error');
+      btn.disabled = false;
+    }, 2500);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// 仅注册
+// ════════════════════════════════════════════════════════════════
+let _regOnlyPollTimer = null;
+
+function startRegOnly() {
+  document.getElementById('regonly-idle').style.display = 'none';
+  document.getElementById('regonly-input').style.display = 'block';
+  document.getElementById('regonly-count').focus();
+}
+
+function cancelRegOnly() {
+  document.getElementById('regonly-input').style.display = 'none';
+  document.getElementById('regonly-idle').style.display = 'block';
+}
+
+async function confirmRegOnly() {
+  const count = parseInt(document.getElementById('regonly-count').value) || 1;
+  document.getElementById('regonly-input').style.display = 'none';
+  document.getElementById('regonly-running').style.display = 'block';
+  document.getElementById('regonly-progress').textContent = `注册中... 0/${count}`;
+
+  try {
+    const r = await fetch('/api/register/start', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ count }),
+    });
+    if (!r.ok) {
+      const e = await r.json();
+      alert(e.detail || '启动失败');
+      resetRegOnly();
+      return;
+    }
+    connectRegWs();
+    _regOnlyPollTimer = setInterval(_pollRegOnly, 1500);
+  } catch (e) {
+    alert('网络错误');
+    resetRegOnly();
+  }
+}
+
+async function _pollRegOnly() {
+  try {
+    const r = await fetch('/api/register/status');
+    const d = await r.json();
+    const prog = document.getElementById('regonly-progress');
+    if (prog) prog.textContent = `注册中... ${d.success}/${d.total} 成功，${d.fail} 失败`;
+    if (!d.running) {
+      clearInterval(_regOnlyPollTimer);
+      _regOnlyPollTimer = null;
+      closeRegWs();
+      document.getElementById('regonly-running').style.display = 'none';
+      document.getElementById('regonly-done').style.display = 'block';
+      document.getElementById('regonly-result').innerHTML =
+        `完成：<b style="color:var(--green)">${d.success}</b> 成功，` +
+        `<b style="color:var(--red)">${d.fail}</b> 失败`;
+      refreshAccounts();
+    }
+  } catch (e) {}
+}
+
+async function stopRegOnly() {
+  await fetch('/api/register/stop', { method: 'POST' }).catch(() => {});
+}
+
+function resetRegOnly() {
+  if (_regOnlyPollTimer) { clearInterval(_regOnlyPollTimer); _regOnlyPollTimer = null; }
+  closeRegWs();
+  document.getElementById('regonly-idle').style.display = 'block';
+  document.getElementById('regonly-input').style.display = 'none';
+  document.getElementById('regonly-running').style.display = 'none';
+  document.getElementById('regonly-done').style.display = 'none';
+}
+
+// ════════════════════════════════════════════════════════════════
+// 池状态刷新
+// ════════════════════════════════════════════════════════════════
+async function refreshPoolStatus() {
+  const btn = document.getElementById('btn-refresh-pool');
+  btn.disabled = true;
+  btn.textContent = '↻ 刷新中...';
+
+  const { base_url, token, target_type, target_count, proxy } = getPoolConfig();
+  if (!base_url || !token) {
+    btn.disabled = false;
+    btn.textContent = '↻ 刷新';
+    appendLog('[提示] 请先在左栏填写 CliProxyAPI Base URL 和 Token');
+    return;
+  }
+
+  try {
+    const r = await fetch('/api/pool/status', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({base_url, token, target_type, proxy}),
+    });
+    const d = await r.json();
+    if (d.ok) {
+      const valid = d.target;
+      const pct = target_count > 0 ? Math.round(Math.min(valid / target_count, 1) * 100) : 0;
+      document.getElementById('pool-type-badge').textContent = target_type;
+      document.getElementById('pool-valid').textContent = valid;
+      document.getElementById('pool-target-disp').textContent = target_count;
+      document.getElementById('pool-pct').textContent = `${pct}%`;
+      document.getElementById('pool-progress-bar').style.width = pct + '%';
+      document.getElementById('pool-total').textContent = d.total;
+      // 失效数量仅在 inspect 后才知道
+    } else {
+      appendLog('[Pool] 获取状态失败: ' + (d.error || '未知错误'));
+    }
+  } catch (e) {
+    appendLog('[Pool] 请求失败: ' + e);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '↻ 刷新';
+}
+
+// ════════════════════════════════════════════════════════════════
+// 手动补号状态机
+// ════════════════════════════════════════════════════════════════
+function _showInspectPanel(state) {
+  // state: 'idle' | 'inspecting' | 'inspected' | 'running'
+  document.getElementById('inspect-idle').style.display        = state === 'idle'       ? ''      : 'none';
+  document.getElementById('inspect-inspecting').style.display  = state === 'inspecting' ? ''      : 'none';
+  document.getElementById('inspect-inspected').style.display   = state === 'inspected'  ? ''      : 'none';
+  document.getElementById('inspect-running').style.display     = state === 'running'    ? ''      : 'none';
+  _inspectState = state;
+}
+
+async function startInspect() {
+  const { base_url, token, target_type, target_count, proxy } = getPoolConfig();
+  if (!base_url || !token) {
+    appendLog('[提示] 请先在左栏填写 CliProxyAPI URL 和 Token');
+    return;
+  }
+
+  _showInspectPanel('inspecting');
+
+  try {
+    const r = await fetch('/api/pool/inspect', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({base_url, token, target_type, target_count, proxy}),
+    });
+
+    if (!r.ok) {
+      const e = await r.json();
+      appendLog('[ERROR] 检查失败: ' + (e.detail || '未知错误'));
+      _showInspectPanel('idle');
+      return;
+    }
+
+    const started = await r.json();
+    const status = await _waitPoolTask('probe', (d) => {
+      const current = Number(d.progress_current || 0);
+      const total = Number(d.progress_total || 0);
+      const invalid = Number(d.invalid_count || 0);
+      const btn = document.querySelector('#inspect-inspecting button');
+      if (btn) {
+        btn.innerHTML = `<span class="spinner"></span> 检查中... ${current}/${total || '—'}  失效=${invalid}`;
+      }
+    });
+
+    if (!status || status.error) {
+      appendLog('[ERROR] 检查失败: ' + ((status && status.error) || '未知错误'));
+      _showInspectPanel('idle');
+      return;
+    }
+
+    _inspectResult = status.result || {};
+    const { invalid_count, valid_count, gap } = _inspectResult;
+
+    // 更新失效数显示
+    document.getElementById('pool-invalid-disp').textContent = invalid_count;
+
+    // 填充结果卡
+    document.getElementById('res-invalid').textContent = invalid_count;
+    document.getElementById('res-valid').textContent   = valid_count;
+    document.getElementById('res-target').textContent  = target_count;
+    document.getElementById('res-gap').textContent     = gap;
+    document.getElementById('fill-count-badge').textContent = gap;
+
+    const noGapEl      = document.getElementById('inspect-no-gap');
+    const actionsEl    = document.getElementById('inspect-actions');
+    if (gap === 0) {
+      noGapEl.style.display   = '';
+      actionsEl.style.display = 'none';
+      _showInspectPanel('inspected');
+      // 3秒后自动回 idle
+      setTimeout(resetInspect, 3000);
+    } else {
+      noGapEl.style.display   = 'none';
+      actionsEl.style.display = '';
+      _showInspectPanel('inspected');
+    }
+
+    appendLog(`[Pool] 检查完成: 失效=${invalid_count}, 有效=${valid_count}, 缺口=${gap}`);
+  } catch (e) {
+    appendLog('[ERROR] 检查请求异常: ' + e);
+    _showInspectPanel('idle');
+  }
+}
+
+async function confirmFill() {
+  if (!_inspectResult) return;
+  const gap = _inspectResult.gap;
+  if (gap <= 0) { resetInspect(); return; }
+
+  const { base_url, token, target_type, target_count, proxy } = getPoolConfig();
+
+  _showInspectPanel('running');
+
+  // 步骤1: 清理 401
+  document.getElementById('running-msg').textContent = '步骤 1/2  清理失效账号...';
+  appendLog('[Pool] 开始清理 401 失效账号...');
+
+  try {
+    const cleanR = await fetch('/api/pool/clean', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        base_url,
+        token,
+        target_type,
+        proxy,
+        probe_result: _inspectResult,
+        probe_signature: _inspectResult.probe_signature,
+        probe_ts: _inspectResult.probe_ts,
+      }),
+    });
+    if (!cleanR.ok) {
+      const e = await cleanR.json();
+      appendLog('[ERROR] 清理请求失败: ' + (e.detail || ''));
+      resetInspect();
+      return;
+    }
+
+    await _waitPoolTask('clean', (d) => {
+      const msg = d.error
+        ? `步骤 1/2  清理异常: ${d.error}`
+        : `步骤 1/2  清理失效账号...`;
+      document.getElementById('running-msg').textContent = msg;
+    });
+
+    // 步骤2: 补号
+    document.getElementById('running-msg').textContent = `步骤 2/2  补号中 (${gap} 个)...`;
+    appendLog(`[Pool] 开始补号: ${gap} 个账号...`);
+
+    const fillR = await fetch('/api/pool/fill', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({base_url, token, count: gap, proxy, target_type, target_count}),
+    });
+    if (!fillR.ok) {
+      const e = await fillR.json();
+      appendLog('[ERROR] 补号请求失败: ' + (e.detail || ''));
+      resetInspect();
+      return;
+    }
+
+    await _waitPoolTask('fill', (d) => {
+      const current = Number(d.progress_current || 0);
+      const total = Number(d.progress_total || gap || 0);
+      document.getElementById('running-msg').textContent = `步骤 2/2  补号中 (${current}/${total || '—'})...`;
+    });
+
+    appendLog('[Pool] 补号流程完成，刷新池状态...');
+    await refreshPoolStatus();
+    refreshAccounts();
+  } catch (e) {
+    appendLog('[ERROR] 补号流程异常: ' + e);
+  }
+
+  resetInspect();
+}
+
+async function _waitPoolTask(expectedTask, onUpdate) {
+  for (let i = 0; i < 1200; i++) {   // 最多等 10 分钟
+    await new Promise(res => setTimeout(res, 500));
+    try {
+      const r = await fetch('/api/pool/task-status');
+      const d = await r.json();
+      if (typeof onUpdate === 'function') onUpdate(d);
+      if (!d.running && (!expectedTask || d.task === expectedTask || d.phase === expectedTask)) {
+        return d;
+      }
+    } catch {}
+  }
+  return null;
+}
+
+function resetInspect() {
+  _inspectResult = null;
+  // 隐藏子元素，防止下次 show 时内容残留
+  document.getElementById('inspect-no-gap').style.display   = 'none';
+  document.getElementById('inspect-actions').style.display  = 'none';
+  _showInspectPanel('idle');
+}
+
+// ════════════════════════════════════════════════════════════════
+// 守护进程
+// ════════════════════════════════════════════════════════════════
+async function toggleDaemon() {
+  const toggle = document.getElementById('daemon-toggle');
+  toggle.classList.add('transitioning');
+
+  const isOn = toggle.classList.contains('on');
+  if (isOn) {
+    await stopDaemon();
+  } else {
+    await startDaemon();
+  }
+
+  toggle.classList.remove('transitioning');
+}
+
+async function startDaemon() {
+  const { base_url, token, target_type, target_count, proxy } = getPoolConfig();
+  if (!base_url || !token) {
+    appendLog('[提示] 请先在左栏填写 CliProxyAPI URL 和 Token');
+    return;
+  }
+  const interval_min = parseInt(document.getElementById('daemon-interval').value) || 30;
+
+  try {
+    const r = await fetch('/api/pool/daemon/start', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({base_url, token, target_type, target_count, proxy, interval_min}),
+    });
+    if (r.ok) {
+      connectPoolWs();
+      await pollDaemonStatus();
+    } else {
+      const e = await r.json();
+      appendLog('[ERROR] 启动守护进程失败: ' + (e.detail || ''));
+    }
+  } catch (e) {
+    appendLog('[ERROR] 请求失败: ' + e);
+  }
+}
+
+async function stopDaemon() {
+  try {
+    await fetch('/api/pool/daemon/stop', {method: 'POST'});
+    await pollDaemonStatus();
+  } catch {}
+}
+
+let _daemonWasRunning = false;
+
+async function pollDaemonStatus() {
+  try {
+    const r = await fetch('/api/pool/daemon/status');
+    const d = await r.json();
+    // 守护进程刚完成一轮 → 刷新列表和池状态
+    if (_daemonWasRunning && !d.running_now) {
+      refreshPoolStatus();
+      refreshAccounts();
+    }
+    _daemonWasRunning = d.running_now;
+    _updateDaemonUI(d);
+  } catch {}
+}
+
+function _updateDaemonUI(d) {
+  const toggle   = document.getElementById('daemon-toggle');
+  const label    = document.getElementById('daemon-status-label');
+  const countdown = document.getElementById('daemon-countdown-row');
+  const cntVal   = document.getElementById('countdown-val');
+  const runBadge = document.getElementById('daemon-running-badge');
+
+  if (d.enabled) {
+    toggle.classList.add('on');
+    label.textContent = d.running_now ? '运行中' : '已启用';
+    label.className = 'daemon-status-text on';
+    countdown.style.display = 'flex';
+
+    if (d.running_now) {
+      runBadge.style.display = 'inline-block';
+      cntVal.textContent = '运行中';
+    } else {
+      runBadge.style.display = 'none';
+      if (d.remaining_sec != null) {
+        cntVal.textContent = fmtSec(d.remaining_sec);
+        _startLocalCountdown(d.remaining_sec);
+      }
+    }
+  } else {
+    toggle.classList.remove('on');
+    label.textContent = '已停止';
+    label.className = 'daemon-status-text';
+    countdown.style.display = 'none';
+    _stopLocalCountdown();
+  }
+
+  // 上次执行时间
+  const lastRunEl = document.getElementById('daemon-last-run');
+  if (lastRunEl) {
+    if (d.last_run_ts) {
+      const dt = new Date(d.last_run_ts * 1000);
+      lastRunEl.textContent = '上次执行: ' + dt.toLocaleString('zh-CN', {hour12: false});
+    } else {
+      lastRunEl.textContent = '上次执行: —';
+    }
+  }
+}
+
+let _lastSyncRemaining = null;
+
+function _startLocalCountdown(initialSec) {
+  _stopLocalCountdown();
+  _lastSyncRemaining = initialSec;
+  let remaining = initialSec;
+
+  _daemonLocalTimer = setInterval(() => {
+    remaining = Math.max(0, remaining - 1);
+    const el = document.getElementById('countdown-val');
+    if (el) el.textContent = fmtSec(remaining);
+    if (remaining === 0) {
+      _stopLocalCountdown();
+      setTimeout(pollDaemonStatus, 2000);
+    }
+  }, 1000);
+}
+
+function _stopLocalCountdown() {
+  if (_daemonLocalTimer) {
+    clearInterval(_daemonLocalTimer);
+    _daemonLocalTimer = null;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// 账号列表
+// ════════════════════════════════════════════════════════════════
+let _accountsCache = null;
+let _accountsCacheKey = '';
+let _accountsPage = 1;
+let _accountsPageSize = 200;
+let _accountsLoadSeq = 0;
+let _accountsAbortController = null;
+
+function _accountsConfigKey() {
+  const c = getPoolConfig();
+  return c.base_url + '|' + c.target_type;
+}
+
+function _hasServerPagination(d) {
+  return !!(d && typeof d.total === 'number' && typeof d.page === 'number' && typeof d.page_size === 'number');
+}
+
+function _updateAccountsPager(total, startIdx, endIdx, totalPages) {
+  const toolbar = document.getElementById('accounts-toolbar');
+  const countLabel = document.getElementById('accounts-count-label');
+  const pageInput = document.getElementById('accounts-page-input');
+  const pageTotal = document.getElementById('accounts-page-total');
+  const prevBtn = document.getElementById('btn-accounts-prev');
+  const nextBtn = document.getElementById('btn-accounts-next');
+  const pageSizeSel = document.getElementById('accounts-page-size');
+
+  if (toolbar) toolbar.style.display = total > 0 ? 'flex' : 'none';
+  if (countLabel) {
+    if (total <= 0) countLabel.textContent = '0 条';
+    else countLabel.textContent = `显示 ${startIdx + 1}-${endIdx} / ${total}`;
+  }
+  if (pageInput) pageInput.value = String(_accountsPage);
+  if (pageTotal) pageTotal.textContent = `共 ${totalPages || 1} 页`;
+  if (pageSizeSel) {
+    const v = String(_accountsPageSize);
+    if (pageSizeSel.value !== v) pageSizeSel.value = v;
+  }
+  if (prevBtn) prevBtn.disabled = _accountsPage <= 1;
+  if (nextBtn) nextBtn.disabled = _accountsPage >= (totalPages || 1);
+}
+
+function onAccountsPageSizeChange() {
+  const sel = document.getElementById('accounts-page-size');
+  const v = parseInt(sel && sel.value) || 200;
+  _accountsPageSize = Math.max(1, v);
+  _accountsPage = 1;
+  if (_accountsCache && !_hasServerPagination(_accountsCache)) _renderAccounts(_accountsCache);
+  else loadSyncStatus();
+}
+
+function prevAccountsPage() {
+  if (_accountsPage <= 1) return;
+  _accountsPage -= 1;
+  if (_accountsCache && !_hasServerPagination(_accountsCache)) _renderAccounts(_accountsCache);
+  else loadSyncStatus();
+}
+
+function nextAccountsPage() {
+  if (_accountsCache) {
+    const totalPages = (_hasServerPagination(_accountsCache)
+      ? _accountsCache.total_pages
+      : Math.max(1, Math.ceil((_accountsCache.accounts || []).length / _accountsPageSize)));
+    if (totalPages && _accountsPage >= totalPages) return;
+  }
+  _accountsPage += 1;
+  if (_accountsCache && !_hasServerPagination(_accountsCache)) _renderAccounts(_accountsCache);
+  else loadSyncStatus();
+}
+
+function onAccountsPageKeydown(e) {
+  if (!e) return;
+  if (e.key !== 'Enter') return;
+  const v = parseInt(e.target && e.target.value) || 1;
+  _accountsPage = Math.max(1, v);
+  if (_accountsCache && !_hasServerPagination(_accountsCache)) _renderAccounts(_accountsCache);
+  else loadSyncStatus();
+  try { e.target.blur(); } catch {}
+}
+
+function onAccountsPageBlur() {
+  const input = document.getElementById('accounts-page-input');
+  const v = parseInt(input && input.value) || 1;
+  _accountsPage = Math.max(1, v);
+  if (_accountsCache && !_hasServerPagination(_accountsCache)) _renderAccounts(_accountsCache);
+  else loadSyncStatus();
+}
+
+function _renderAccounts(data) {
+  const loading = document.getElementById('accounts-loading');
+  const tableWrap = document.getElementById('accounts-table-wrap');
+  const emptyEl = document.getElementById('accounts-empty');
+  const tbody = document.getElementById('accounts-tbody');
+
+  loading.style.display = 'none';
+
+  const accounts = data.accounts || [];
+  const serverPaged = _hasServerPagination(data);
+
+  let total = 0;
+  let totalPages = 1;
+  let pageStart = 0;
+  let pageEnd = 0;
+  let pageAccounts = accounts;
+
+  if (serverPaged) {
+    _accountsPage = Math.max(1, parseInt(data.page) || 1);
+    _accountsPageSize = Math.max(1, parseInt(data.page_size) || 200);
+    total = Math.max(0, parseInt(data.total) || 0);
+    totalPages = Math.max(1, parseInt(data.total_pages) || Math.ceil(total / _accountsPageSize) || 1);
+    pageStart = (_accountsPage - 1) * _accountsPageSize;
+    pageEnd = Math.min(pageStart + pageAccounts.length, total);
+  } else {
+    total = accounts.length;
+    totalPages = Math.max(1, Math.ceil(total / _accountsPageSize));
+    if (_accountsPage > totalPages) _accountsPage = totalPages;
+    if (_accountsPage < 1) _accountsPage = 1;
+    pageStart = (_accountsPage - 1) * _accountsPageSize;
+    pageEnd = Math.min(pageStart + _accountsPageSize, total);
+    pageAccounts = accounts.slice(pageStart, pageEnd);
+  }
+
+  if (total === 0 || pageAccounts.length === 0) {
+    _updateAccountsPager(0, 0, 0, 1);
+    emptyEl.textContent = '暂无账号';
+    emptyEl.style.display = '';
+    tableWrap.style.display = 'none';
+    return;
+  }
+
+  const statusBadge = {
+    synced:         '<span class="badge badge-green">✓ 已同步</span>',
+    pending_upload: '<span class="badge badge-orange">待上传</span>',
+    pending_move:   '<span class="badge badge-blue">可移动</span>',
+    remote_only:    '<span class="badge badge-purple">仅远程</span>',
+    local_only:     '<span class="badge badge-gray">仅本地</span>',
+  };
+
+  const locationLabel = {
+    uploaded: 'codex_tokens/uploaded/',
+    root: 'codex_tokens/',
+    remote: '远程',
+  };
+
+  tbody.innerHTML = '';
+  const frag = document.createDocumentFragment();
+  pageAccounts.forEach((acc, i) => {
+    const tr = document.createElement('tr');
+    const badge = statusBadge[acc.status] || `<span class="badge badge-gray">${acc.status}</span>`;
+    const loc = locationLabel[acc.location] || acc.location || '—';
+    tr.innerHTML = `<td>${pageStart + i + 1}</td><td>${acc.name || '—'}</td><td>${acc.type || '—'}</td><td>${badge}</td><td style="font-family:var(--font-mono);font-size:11px">${loc}</td>`;
+    frag.appendChild(tr);
+  });
+  tbody.appendChild(frag);
+  _updateAccountsPager(total, pageStart, pageEnd, totalPages);
+  emptyEl.style.display = 'none';
+  tableWrap.style.display = '';
+}
+
+function refreshAccounts() {
+  _accountsCache = null;
+  _accountsCacheKey = '';
+  loadSyncStatus();
+}
+
+async function loadSyncStatus() {
+  const { base_url, token, target_type, proxy } = getPoolConfig();
+  if (!base_url || !token) {
+    appendLog('[提示] 请先在左栏填写 CliProxyAPI URL 和 Token');
+    return;
+  }
+
+  const loading = document.getElementById('accounts-loading');
+  const tableWrap = document.getElementById('accounts-table-wrap');
+  const emptyEl = document.getElementById('accounts-empty');
+  const toolbar = document.getElementById('accounts-toolbar');
+  const reqId = ++_accountsLoadSeq;
+
+  if (_accountsAbortController) {
+    try { _accountsAbortController.abort(); } catch {}
+  }
+  const controller = new AbortController();
+  _accountsAbortController = controller;
+
+  loading.style.display = '';
+  tableWrap.style.display = 'none';
+  emptyEl.style.display = 'none';
+  if (toolbar) toolbar.style.display = 'none';
+
+  try {
+    const params = new URLSearchParams({
+      base_url,
+      token,
+      target_type,
+      proxy,
+      page: String(_accountsPage),
+      page_size: String(_accountsPageSize),
+    });
+    const r = await fetch('/api/pool/sync-status?' + params.toString(), {
+      signal: controller.signal,
+    });
+    const d = await r.json();
+
+    if (reqId !== _accountsLoadSeq) return;
+
+    loading.style.display = 'none';
+
+    if (!d.ok) {
+      appendLog('[账号列表] 加载失败: ' + (d.error || '未知错误'));
+      emptyEl.textContent = '加载失败: ' + (d.error || '');
+      emptyEl.style.display = '';
+      if (toolbar) toolbar.style.display = 'none';
+      return;
+    }
+
+    _accountsCache = d;
+    _accountsCacheKey = _accountsConfigKey();
+    _renderAccounts(d);
+  } catch (e) {
+    if (controller.signal.aborted || (e && e.name === 'AbortError')) return;
+    if (reqId !== _accountsLoadSeq) return;
+    loading.style.display = 'none';
+    appendLog('[账号列表] 请求异常: ' + e);
+    emptyEl.textContent = '请求异常';
+    emptyEl.style.display = '';
+  } finally {
+    if (_accountsAbortController === controller) {
+      _accountsAbortController = null;
+    }
+  }
+}
+
+async function doSync() {
+  const { base_url, token, target_type, target_count, proxy } = getPoolConfig();
+  if (!base_url || !token) {
+    appendLog('[提示] 请先在左栏填写 CliProxyAPI URL 和 Token');
+    return;
+  }
+  const syncBtn = document.getElementById('btn-sync-accounts');
+  syncBtn.disabled = true;
+  syncBtn.textContent = '同步中...';
+  try {
+    const r = await fetch('/api/pool/sync', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({base_url, token, target_type, target_count, proxy}),
+    });
+    const d = await r.json();
+    if (d.ok) {
+      appendLog(`[同步] 完成：上传 ${d.uploaded ?? 0} 个，移动 ${d.moved} 个，下载 ${d.downloaded} 个`);
+    } else {
+      appendLog('[同步] 失败: ' + (d.error || '未知错误'));
+    }
+  } catch (e) {
+    appendLog('[同步] 请求异常: ' + e);
+  } finally {
+    syncBtn.disabled = false;
+    syncBtn.textContent = '⇅ 同步';
+    _accountsCache = null;
+    _accountsCacheKey = '';
+    loadSyncStatus();
+    refreshPoolStatus();
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// 初始化
+// ════════════════════════════════════════════════════════════════
+(async function init() {
+  await loadSettings();
+  connectPoolWs();
+
+  // 初次刷新池状态
+  const { base_url, token } = getPoolConfig();
+  if (base_url && token) {
+    refreshPoolStatus();
+    loadSyncStatus();
+  }
+
+  // 守护进程状态轮询
+  pollDaemonStatus();
+  _daemonPollTimer = setInterval(pollDaemonStatus, 5000);
+})();
+</script>
+</body>
+</html>

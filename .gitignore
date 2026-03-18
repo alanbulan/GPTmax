@@ -1,0 +1,39 @@
+.DS_Store
+node_modules/
+dist/
+build/
+__pycache__/
+*.py[oc]
+*.egg-info/
+
+# CLIProxyAPI runtime data
+/CLIProxyAPI/.env
+/CLIProxyAPI/config.yaml
+/CLIProxyAPI/auths/
+/CLIProxyAPI/pgstore/
+/CLIProxyAPI/logs/
+/CLIProxyAPI/CLIProxyAPI.new
+/CLIProxyAPI/desktop.exe
+/CLIProxyAPI/test_proxy
+/CLIProxyAPI/nul
+/CLIProxyAPI/cmd/desktop/frontend/node_modules/
+/CLIProxyAPI/cmd/desktop/frontend/dist/
+/CLIProxyAPI/cmd/desktop/frontend/wailsjs/go/
+/CLIProxyAPI/management-center/node_modules/
+/CLIProxyAPI/management-center/dist/
+
+# Register web runtime data
+/chatgpt_register_web/config.json
+/chatgpt_register_web/ak.txt
+/chatgpt_register_web/rk.txt
+/chatgpt_register_web/registered_accounts.txt
+/chatgpt_register_web/codex_tokens/
+
+# Clash runtime data
+/Clash/bin/
+/Clash/config/config.yaml
+/Clash/config/config.yaml.bak.*
+/Clash/config/cache.db
+/Clash/config/geoip.metadb
+/Clash/clash.log
+/Clash/clash_debug.log

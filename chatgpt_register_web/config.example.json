@@ -1,0 +1,18 @@
+{
+  "duckmail_api_base": "https://api.example.com",
+  "duckmail_bearer": "replace-with-your-token",
+  "proxy": "http://127.0.0.1:17890",
+  "workers": 3,
+  "oauth_issuer": "https://auth.openai.com",
+  "oauth_client_id": "app_xxxxxxxxxxxxxxxxx",
+  "oauth_redirect_uri": "http://localhost:1455/auth/callback",
+  "enable_oauth": true,
+  "oauth_required": true,
+  "pool": {
+    "base_url": "http://127.0.0.1:8317",
+    "token": "replace-with-your-management-token",
+    "target_type": "codex",
+    "target_count": 100000,
+    "interval_min": 2400
+  }
+}

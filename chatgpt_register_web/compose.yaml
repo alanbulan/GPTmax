@@ -1,0 +1,17 @@
+services:
+  chatgpt-register-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chatgpt-register-web
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      HOST: 0.0.0.0
+      PORT: 20080
+    volumes:
+      - ./config.json:/app/config.json:Z
+      - ./registered_accounts.txt:/app/registered_accounts.txt:Z
+      - ./ak.txt:/app/ak.txt:Z
+      - ./rk.txt:/app/rk.txt:Z
+      - ./codex_tokens:/app/codex_tokens:Z
