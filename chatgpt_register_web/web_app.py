@@ -142,6 +142,13 @@ def _make_pool_log_cb():
     return lambda msg: _push_log_sync(_pool_ws_clients, msg, _pool_log_send_lock)
 
 
+def _pool_lifecycle_disabled() -> None:
+    raise HTTPException(
+        status_code=410,
+        detail="注册机已切为纯注册上传模式；账号探测、清理、同步、守护改由 CLIProxyAPI 负责",
+    )
+
+
 def _token_fingerprint(token: str) -> str:
     if not token:
         return ""
@@ -382,99 +389,12 @@ async def ws_register_logs(ws: WebSocket):
 
 @app.post("/api/pool/probe")
 async def pool_probe(body: dict = Body(...)):
-    if _pool_state["running"]:
-        raise HTTPException(status_code=409, detail="已有池任务运行中")
-
-    base_url = body.get("base_url", "").strip()
-    token = body.get("token", "").strip()
-    target_type = body.get("target_type", "codex")
-    proxy = body.get("proxy", "").strip()
-
-    if not base_url or not token:
-        raise HTTPException(status_code=400, detail="base_url 和 token 不能为空")
-
-    job_id = _start_pool_job("probe", "inspecting")
-    log_cb = _make_pool_log_cb()
-
-    def progress_cb(payload: Dict[str, int]):
-        _update_pool_job(
-            progress_current=int(payload.get("checked", 0)),
-            progress_total=int(payload.get("total", 0)),
-            invalid_count=int(payload.get("invalid_count", 0)),
-        )
-
-    def run_task():
-        try:
-            result = reg.run_pool_probe(
-                base_url, token, target_type, proxy, log_cb=log_cb, progress_cb=progress_cb
-            )
-            log_cb(f"[Pool] 探测结果: 总={result.get('total')}, 目标={result.get('target')}, 401={result.get('invalid_count')}")
-            _finish_pool_job(result=result)
-        except Exception as e:
-            log_cb(f"[ERROR] 探测异常: {e}")
-            _finish_pool_job(error=str(e))
-
-    threading.Thread(target=run_task, daemon=True).start()
-    return {"ok": True, "task": "probe", "job_id": job_id}
+    _pool_lifecycle_disabled()
 
 
 @app.post("/api/pool/clean")
 async def pool_clean(body: dict = Body(...)):
-    if _pool_state["running"]:
-        raise HTTPException(status_code=409, detail="已有池任务运行中")
-
-    base_url = body.get("base_url", "").strip()
-    token = body.get("token", "").strip()
-    target_type = body.get("target_type", "codex")
-    proxy = body.get("proxy", "").strip()
-    probe_result = body.get("probe_result")
-    probe_signature = str(body.get("probe_signature", "") or "")
-    probe_ts_raw = body.get("probe_ts")
-
-    if not base_url or not token:
-        raise HTTPException(status_code=400, detail="base_url 和 token 不能为空")
-
-    job_id = _start_pool_job("clean", "cleaning")
-    log_cb = _make_pool_log_cb()
-
-    def run_task():
-        try:
-            now_ts = int(time.time())
-            expected_signature = _build_probe_signature(base_url, token, target_type, proxy)
-            use_cached_probe = False
-            if isinstance(probe_result, dict):
-                try:
-                    probe_ts = int(probe_ts_raw)
-                except Exception:
-                    probe_ts = 0
-                is_fresh = probe_ts > 0 and (now_ts - probe_ts) <= _PROBE_RESULT_TTL_SEC
-                signature_ok = bool(probe_signature) and probe_signature == expected_signature
-                invalid_list_ok = isinstance(probe_result.get("invalid_401"), list)
-                use_cached_probe = is_fresh and signature_ok and invalid_list_ok
-
-            if use_cached_probe:
-                log_cb("[Pool] 复用检查结果执行清理，跳过重复探测")
-                result = reg.run_pool_clean_with_probe_result(
-                    base_url=base_url,
-                    token=token,
-                    probe_result=probe_result,
-                    proxy=proxy,
-                    log_cb=log_cb,
-                )
-            else:
-                if isinstance(probe_result, dict):
-                    log_cb("[Pool] 检查结果不可用或已过期，回退为重新探测后清理")
-                result = reg.run_pool_clean(base_url, token, target_type, proxy, log_cb=log_cb)
-            log_cb(f"[Pool] 清理完成: 删除={result.get('deleted')}, 失败={result.get('delete_fail')}")
-            _finish_pool_job(result=result)
-        except Exception as e:
-            log_cb(f"[ERROR] 清理异常: {e}")
-            _finish_pool_job(error=str(e))
-        finally:
-            _sync_status_cache_clear()
-
-    threading.Thread(target=run_task, daemon=True).start()
-    return {"ok": True, "task": "clean", "job_id": job_id}
+    _pool_lifecycle_disabled()
 
 
 @app.post("/api/pool/fill")
@@ -544,49 +464,19 @@ async def pool_status_api(body: dict = Body(...)):
 @app.get("/api/pool/accounts")
 async def pool_accounts(base_url: str, token: str,
                         target_type: str = "codex", proxy: str = ""):
-    if not base_url or not token:
-        raise HTTPException(status_code=400, detail="base_url 和 token 不能为空")
-    result = await asyncio.get_event_loop().run_in_executor(
-        None, lambda: reg.get_pool_accounts(base_url, token, target_type, proxy)
-    )
-    return result
+    _pool_lifecycle_disabled()
 
 
 @app.get("/api/pool/sync-status")
 async def pool_sync_status(base_url: str, token: str,
                            target_type: str = "codex", proxy: str = "",
                            page: Optional[int] = None, page_size: int = 200):
-    if not base_url or not token:
-        raise HTTPException(status_code=400, detail="base_url 和 token 不能为空")
-    return await asyncio.get_event_loop().run_in_executor(
-        None, lambda: reg.get_sync_status(
-            base_url,
-            token,
-            target_type,
-            proxy=proxy,
-            page=page,
-            page_size=page_size,
-        )
-    )
+    _pool_lifecycle_disabled()
 
 
 @app.post("/api/pool/sync")
 async def pool_sync(body: dict = Body(...)):
-    base_url = body.get("base_url", "").strip()
-    token = body.get("token", "").strip()
-    target_type = body.get("target_type", "codex")
-    proxy = body.get("proxy", "").strip()
-    target_count = int(body.get("target_count", 0))
-
-    if not base_url or not token:
-        raise HTTPException(status_code=400, detail="base_url 和 token 不能为空")
-
-    log_cb = _make_pool_log_cb()
-    result = await asyncio.get_event_loop().run_in_executor(
-        None, lambda: reg.sync_local_remote(base_url, token, target_type, proxy=proxy, log_cb=log_cb, target_count=target_count)
-    )
-    _sync_status_cache_clear()
-    return result
+    _pool_lifecycle_disabled()
 
 
 @app.get("/api/pool/task-status")
@@ -611,64 +501,7 @@ async def pool_task_status():
 
 @app.post("/api/pool/inspect")
 async def pool_inspect(body: dict = Body(...)):
-    """同步探测账号池，返回检查结果（供前端渲染确认卡）"""
-    base_url = body.get("base_url", "").strip()
-    token = body.get("token", "").strip()
-    target_type = body.get("target_type", "codex")
-    target_count = int(body.get("target_count", 100))
-    proxy = body.get("proxy", "").strip()
-
-    if not base_url or not token:
-        raise HTTPException(status_code=400, detail="base_url 和 token 不能为空")
-
-    if _pool_state["running"]:
-        raise HTTPException(status_code=409, detail="已有池任务运行中")
-
-    job_id = _start_pool_job("probe", "inspecting")
-    log_cb = _make_pool_log_cb()
-    log_cb("[Pool] 开始检查失效账号...")
-
-    def progress_cb(payload: Dict[str, int]):
-        checked = int(payload.get("checked", 0))
-        total_checked = int(payload.get("total", 0))
-        invalid_count = int(payload.get("invalid_count", 0))
-        _update_pool_job(
-            progress_current=checked,
-            progress_total=total_checked,
-            invalid_count=invalid_count,
-        )
-
-    def run_task():
-        try:
-            result = reg.run_pool_probe(
-                base_url, token, target_type, proxy, log_cb=log_cb, progress_cb=progress_cb
-            )
-            if not result.get("ok"):
-                err = str(result.get("error", "探测失败"))
-                log_cb(f"[ERROR] 检查失败: {err}")
-                _finish_pool_job(error=err)
-                return
-            log_cb(f"[Pool] 检查结束: 总={result.get('total')}, 目标={result.get('target')}, 401={result.get('invalid_count')}")
-            probe_ts = int(time.time())
-            probe_signature = _build_probe_signature(base_url, token, target_type, proxy)
-            valid = int(result.get("target", 0)) - int(result.get("invalid_count", 0))
-            gap = max(0, target_count - valid)
-            enriched = {
-                **result,
-                "valid_count": valid,
-                "gap": gap,
-                "target_count": target_count,
-                "probe_ts": probe_ts,
-                "probe_signature": probe_signature,
-            }
-            _update_pool_job(valid_count=valid, gap=gap)
-            _finish_pool_job(result=enriched)
-        except Exception as e:
-            log_cb(f"[ERROR] 检查请求异常: {e}")
-            _finish_pool_job(error=str(e))
-
-    threading.Thread(target=run_task, daemon=True).start()
-    return {"ok": True, "task": "probe", "job_id": job_id}
+    _pool_lifecycle_disabled()
 
 
 # ============================================================
@@ -730,10 +563,26 @@ async def proxy_test(body: dict = Body(...)):
 # ============================================================
 
 @app.get("/api/results")
-async def get_results():
+async def get_results(page: int = 1, page_size: int = 200):
     config = reg.load_config()
     accounts = reg.read_registered_accounts(config)
-    return {"ok": True, "accounts": accounts, "count": len(accounts)}
+    total = len(accounts)
+    page = max(1, int(page))
+    page_size = max(1, min(1000, int(page_size)))
+    total_pages = max(1, (total + page_size - 1) // page_size)
+    if page > total_pages:
+        page = total_pages
+    start = (page - 1) * page_size
+    end = start + page_size
+    return {
+        "ok": True,
+        "accounts": accounts[start:end],
+        "count": total,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages,
+    }
 
 
 @app.get("/api/tokens")
@@ -795,145 +644,27 @@ _pool_daemon_timer: Optional[threading.Timer] = None
 
 
 def _run_daemon_once():
-    """守护进程单次执行"""
-    global _pool_daemon_timer
-
-    if not _pool_daemon["enabled"]:
-        return
-
-    _pool_daemon["running_now"] = True
-    log_cb = _make_pool_log_cb()
-    try:
-        cfg = _pool_daemon["config"]
-        proxy = reg._proxy_pool.get_best(cfg.get("proxy", ""))
-        stop_event = threading.Event()
-        reg.run_pool_maintain_cycle(
-            base_url=cfg.get("base_url", ""),
-            token=cfg.get("token", ""),
-            target_type=cfg.get("target_type", "codex"),
-            target_count=int(cfg.get("target_count", 10)),
-            stop_event=stop_event,
-            log_cb=log_cb,
-            config=reg.load_config(),
-            proxy=proxy,
-        )
-    except Exception as e:
-        log_cb(f"[Daemon] 执行异常: {e}")
-    finally:
-        _pool_daemon["running_now"] = False
-        _pool_daemon["last_run_ts"] = time.time()
-        if _pool_daemon["enabled"]:
-            interval_sec = _pool_daemon["interval_min"] * 60
-            _pool_daemon["next_run_ts"] = time.time() + interval_sec
-            _pool_daemon_timer = threading.Timer(interval_sec, _run_daemon_once)
-            _pool_daemon_timer.daemon = True
-            _pool_daemon_timer.start()
+    return
 
 
 @app.post("/api/pool/daemon/start")
 async def pool_daemon_start(body: dict = Body(...)):
-    global _pool_daemon_timer
-
-    base_url = body.get("base_url", "").strip()
-    token = body.get("token", "").strip()
-    if not base_url or not token:
-        raise HTTPException(status_code=400, detail="base_url 和 token 不能为空")
-
-    # 停止旧 timer
-    if _pool_daemon_timer and _pool_daemon_timer.is_alive():
-        _pool_daemon_timer.cancel()
-
-    interval_min = max(1, int(body.get("interval_min", 30)))
-    _pool_daemon.update({
-        "enabled": True,
-        "interval_min": interval_min,
-        "config": {
-            "base_url": base_url,
-            "token": token,
-            "target_type": body.get("target_type", "codex"),
-            "target_count": int(body.get("target_count", 10)),
-            "proxy": body.get("proxy", "").strip(),
-        },
-    })
-
-    # 立即执行一次（在后台线程）
-    _pool_daemon["next_run_ts"] = None
-    t = threading.Thread(target=_run_daemon_once, daemon=True)
-    t.start()
-
-    return {"ok": True, "interval_min": interval_min}
+    _pool_lifecycle_disabled()
 
 
 @app.post("/api/pool/daemon/stop")
 async def pool_daemon_stop():
-    global _pool_daemon_timer
-
-    _pool_daemon["enabled"] = False
-    _pool_daemon["next_run_ts"] = None
-    if _pool_daemon_timer and _pool_daemon_timer.is_alive():
-        _pool_daemon_timer.cancel()
-        _pool_daemon_timer = None
-
-    return {"ok": True}
+    _pool_lifecycle_disabled()
 
 
 @app.get("/api/pool/daemon/status")
 async def pool_daemon_status():
-    remaining = None
-    if _pool_daemon["next_run_ts"]:
-        remaining = max(0, int(_pool_daemon["next_run_ts"] - time.time()))
-    return {
-        "enabled": _pool_daemon["enabled"],
-        "running_now": _pool_daemon["running_now"],
-        "interval_min": _pool_daemon["interval_min"],
-        "next_run_ts": _pool_daemon["next_run_ts"],
-        "last_run_ts": _pool_daemon["last_run_ts"],
-        "remaining_sec": remaining,
-        "config": _pool_daemon["config"],
-    }
+    _pool_lifecycle_disabled()
 
 
 @app.post("/api/pool/daemon/run-once")
 async def pool_daemon_run_once(body: dict = Body(default={})):
-    """立即触发一次维护周期（不影响守护进程定时器）"""
-    cfg = _pool_daemon["config"]
-    # 允许临时覆盖配置
-    if body.get("base_url"):
-        cfg = {**cfg, **body}
-
-    base_url = cfg.get("base_url", "").strip()
-    token = cfg.get("token", "").strip()
-    if not base_url or not token:
-        raise HTTPException(status_code=400, detail="请先配置 base_url 和 token")
-
-    if _pool_daemon["running_now"]:
-        raise HTTPException(status_code=409, detail="守护进程正在运行中")
-
-    log_cb = _make_pool_log_cb()
-
-    def run_task():
-        _pool_daemon["running_now"] = True
-        try:
-            proxy = reg._proxy_pool.get_best(cfg.get("proxy", ""))
-            stop_event = threading.Event()
-            reg.run_pool_maintain_cycle(
-                base_url=cfg.get("base_url", ""),
-                token=cfg.get("token", ""),
-                target_type=cfg.get("target_type", "codex"),
-                target_count=int(cfg.get("target_count", 10)),
-                stop_event=stop_event,
-                log_cb=log_cb,
-                config=reg.load_config(),
-                proxy=proxy,
-            )
-        except Exception as e:
-            log_cb(f"[Daemon] 执行异常: {e}")
-        finally:
-            _pool_daemon["running_now"] = False
-            _pool_daemon["last_run_ts"] = time.time()
-
-    threading.Thread(target=run_task, daemon=True).start()
-    return {"ok": True}
+    _pool_lifecycle_disabled()
 
 
 # ============================================================

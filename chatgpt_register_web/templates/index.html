@@ -381,76 +381,6 @@ input:focus, select:focus {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ─── Daemon section ─── */
-.daemon-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 8px;
-}
-
-.toggle-wrap { display: flex; align-items: center; gap: 8px; }
-
-.toggle {
-  width: 40px;
-  height: 24px;
-  background: var(--text-tertiary);
-  border-radius: 999px;
-  cursor: pointer;
-  position: relative;
-  transition: background var(--transition);
-  flex-shrink: 0;
-}
-
-.toggle.on { background: var(--green); }
-.toggle.transitioning { opacity: 0.6; pointer-events: none; }
-
-.toggle::after {
-  content: '';
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  background: #fff;
-  border-radius: 50%;
-  top: 2px;
-  left: 2px;
-  transition: left var(--transition);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-.toggle.on::after { left: 18px; }
-
-.daemon-interval-wrap {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.daemon-interval-wrap input { width: 72px; }
-
-.countdown-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  background: rgba(0,122,255,0.06);
-  border-radius: 8px;
-  margin-top: 8px;
-}
-
-.countdown-label { font-size: 12px; color: var(--text-secondary); }
-
-.countdown-value {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--blue);
-  font-family: var(--font-mono);
-  min-width: 55px;
-}
-
 /* ─── Badges ─── */
 .badge {
   display: inline-block;
@@ -620,13 +550,6 @@ input:focus, select:focus {
 .log-placeholder { color: #555; }
 
 /* ─── Status indicator dot ─── */
-.daemon-status-text {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-.daemon-status-text.on { color: var(--green); font-weight: 600; }
-
 /* ─── Save button feedback ─── */
 .save-success { color: var(--green) !important; }
 .save-error { color: var(--red) !important; }
@@ -750,32 +673,31 @@ input:focus, select:focus {
         </div>
         <div class="pool-meta">
           <span>总账号: <b id="pool-total">—</b></span>
-          <span>失效: <b id="pool-invalid-disp">—</b></span>
+          <span>失效: <b id="pool-invalid-disp">CLI维护</b></span>
         </div>
       </div>
     </div>
 
     <!-- 手动补号卡片 -->
     <div class="card" style="flex:1;min-width:0">
-      <div class="card-title" style="margin-bottom:14px">手动补号</div>
+      <div class="card-title" style="margin-bottom:14px">自动补号</div>
 
-        <!-- idle: 显示 [开始检查] -->
+        <!-- idle: 显示 [检查缺口] -->
         <div id="inspect-idle">
-          <button class="btn btn-primary" id="btn-inspect" onclick="startInspect()">开始检查</button>
+          <button class="btn btn-primary" id="btn-inspect" onclick="startInspect()">检查缺口</button>
         </div>
 
         <!-- inspecting: spinner -->
         <div id="inspect-inspecting" style="display:none">
           <button class="btn btn-primary" disabled>
-            <span class="spinner"></span> 检查中...
+            <span class="spinner"></span> 计算中...
           </button>
         </div>
 
         <!-- inspected: 显示结果 -->
         <div id="inspect-inspected" style="display:none">
           <div class="inspect-result-row">
-            <span class="result-item red">失效 <b id="res-invalid">0</b></span>
-            <span class="result-item green">有效 <b id="res-valid">0</b></span>
+            <span class="result-item green">当前 <b id="res-valid">0</b></span>
             <span class="result-item">目标 <b id="res-target">0</b></span>
             <span class="result-item orange">缺口 <b id="res-gap">0</b></span>
           </div>
@@ -798,26 +720,17 @@ input:focus, select:focus {
 
     </div><!-- /手动补号卡片 -->
 
-    <!-- 守护进程卡片 -->
+    <!-- 生命周期卡片 -->
     <div class="card" style="flex:1;min-width:0">
-      <div class="card-title" style="margin-bottom:14px">守护进程</div>
-        <div class="daemon-row">
-          <div class="toggle-wrap">
-            <div class="toggle" id="daemon-toggle" onclick="toggleDaemon()"></div>
-            <span class="daemon-status-text" id="daemon-status-label">已停止</span>
-          </div>
-          <div class="daemon-interval-wrap">
-            每 <input type="number" id="daemon-interval" value="30" min="1"> 分钟执行一次
-          </div>
+      <div class="card-title" style="margin-bottom:14px">生命周期</div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.7">
+          注册机现在只负责注册和上传新号。
+          <br>
+          401 删除、额度下沉、额度恢复、坏号冷却，统一交给 CLIProxyAPI 处理。
         </div>
-        <div id="daemon-countdown-row" class="countdown-bar" style="display:none">
-          <span class="countdown-label">下次执行</span>
-          <span class="countdown-value" id="countdown-val">--:--</span>
-          <span class="badge badge-orange" id="daemon-running-badge" style="display:none">运行中</span>
-        </div>
-        <div id="daemon-last-run" style="font-size:12px;color:var(--text-tertiary);margin-top:6px">上次执行: —</div>
+        <input type="hidden" id="daemon-interval" value="2400">
 
-    </div><!-- /守护进程卡片 -->
+    </div><!-- /生命周期卡片 -->
 
     <!-- 仅注册卡片 -->
     <div class="card maint-card">
@@ -861,10 +774,9 @@ input:focus, select:focus {
     <!-- 账号列表卡片 -->
     <div class="card" id="accounts-card" style="flex-shrink:0">
       <div class="card-header">
-        <div class="card-title">账号列表</div>
+        <div class="card-title">本地注册结果</div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-sm btn-secondary" id="btn-refresh-accounts" onclick="refreshAccounts()">↻ 刷新</button>
-          <button class="btn btn-sm btn-secondary" id="btn-sync-accounts" onclick="doSync()">⇅ 同步</button>
         </div>
       </div>
       <div class="accounts-toolbar" id="accounts-toolbar" style="display:none">
@@ -896,7 +808,7 @@ input:focus, select:focus {
         <div id="accounts-loading" style="display:none;color:var(--text-tertiary);font-size:13px">加载中...</div>
         <div class="accounts-table-wrap" id="accounts-table-wrap" style="display:none">
           <table class="accounts-table">
-            <thead><tr><th>#</th><th>账号名称</th><th>类型</th><th>状态</th><th>位置</th></tr></thead>
+            <thead><tr><th>#</th><th>邮箱</th><th>ChatGPT密码</th><th>邮箱密码</th><th>OAuth</th></tr></thead>
             <tbody id="accounts-tbody"></tbody>
           </table>
         </div>
@@ -926,19 +838,10 @@ let _inspectState = 'idle';   // idle | inspecting | inspected | running
 let _inspectResult = null;    // run_pool_inspect 返回的结果
 let _poolWs = null;
 let _regWs  = null;
-let _daemonLocalTimer = null; // 每秒递减倒计时
-let _daemonPollTimer = null;  // 每5秒同步后端
 
 // ════════════════════════════════════════════════════════════════
 // 工具函数
 // ════════════════════════════════════════════════════════════════
-function fmtSec(s) {
-  s = Math.max(0, Math.round(s));
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-}
-
 // 已保存到服务端的配置（只在 loadSettings/saveSettings 成功后更新）
 let _savedConfig = { base_url: '', token: '', target_type: 'codex', target_count: 100, proxy: '' };
 
@@ -1319,7 +1222,7 @@ async function refreshPoolStatus() {
       document.getElementById('pool-pct').textContent = `${pct}%`;
       document.getElementById('pool-progress-bar').style.width = pct + '%';
       document.getElementById('pool-total').textContent = d.total;
-      // 失效数量仅在 inspect 后才知道
+      document.getElementById('pool-invalid-disp').textContent = 'CLI维护';
     } else {
       appendLog('[Pool] 获取状态失败: ' + (d.error || '未知错误'));
     }
@@ -1353,44 +1256,23 @@ async function startInspect() {
   _showInspectPanel('inspecting');
 
   try {
-    const r = await fetch('/api/pool/inspect', {
+    const r = await fetch('/api/pool/status', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({base_url, token, target_type, target_count, proxy}),
+      body: JSON.stringify({base_url, token, target_type, proxy}),
     });
 
-    if (!r.ok) {
-      const e = await r.json();
-      appendLog('[ERROR] 检查失败: ' + (e.detail || '未知错误'));
+    const d = await r.json();
+    if (!d.ok) {
+      appendLog('[ERROR] 检查缺口失败: ' + (d.error || d.detail || '未知错误'));
       _showInspectPanel('idle');
       return;
     }
 
-    const started = await r.json();
-    const status = await _waitPoolTask('probe', (d) => {
-      const current = Number(d.progress_current || 0);
-      const total = Number(d.progress_total || 0);
-      const invalid = Number(d.invalid_count || 0);
-      const btn = document.querySelector('#inspect-inspecting button');
-      if (btn) {
-        btn.innerHTML = `<span class="spinner"></span> 检查中... ${current}/${total || '—'}  失效=${invalid}`;
-      }
-    });
+    const valid_count = Number(d.target || 0);
+    const gap = Math.max(0, Number(target_count || 0) - valid_count);
+    _inspectResult = { valid_count, gap, target_count };
 
-    if (!status || status.error) {
-      appendLog('[ERROR] 检查失败: ' + ((status && status.error) || '未知错误'));
-      _showInspectPanel('idle');
-      return;
-    }
-
-    _inspectResult = status.result || {};
-    const { invalid_count, valid_count, gap } = _inspectResult;
-
-    // 更新失效数显示
-    document.getElementById('pool-invalid-disp').textContent = invalid_count;
-
-    // 填充结果卡
-    document.getElementById('res-invalid').textContent = invalid_count;
     document.getElementById('res-valid').textContent   = valid_count;
     document.getElementById('res-target').textContent  = target_count;
     document.getElementById('res-gap').textContent     = gap;
@@ -1410,9 +1292,9 @@ async function startInspect() {
       _showInspectPanel('inspected');
     }
 
-    appendLog(`[Pool] 检查完成: 失效=${invalid_count}, 有效=${valid_count}, 缺口=${gap}`);
+    appendLog(`[Pool] 当前有效=${valid_count}, 目标=${target_count}, 缺口=${gap}`);
   } catch (e) {
-    appendLog('[ERROR] 检查请求异常: ' + e);
+    appendLog('[ERROR] 检查缺口请求异常: ' + e);
     _showInspectPanel('idle');
   }
 }
@@ -1425,43 +1307,10 @@ async function confirmFill() {
   const { base_url, token, target_type, target_count, proxy } = getPoolConfig();
 
   _showInspectPanel('running');
-
-  // 步骤1: 清理 401
-  document.getElementById('running-msg').textContent = '步骤 1/2  清理失效账号...';
-  appendLog('[Pool] 开始清理 401 失效账号...');
+  document.getElementById('running-msg').textContent = `补号中 (${gap} 个)...`;
+  appendLog(`[Pool] 开始补号: ${gap} 个账号...`);
 
   try {
-    const cleanR = await fetch('/api/pool/clean', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        base_url,
-        token,
-        target_type,
-        proxy,
-        probe_result: _inspectResult,
-        probe_signature: _inspectResult.probe_signature,
-        probe_ts: _inspectResult.probe_ts,
-      }),
-    });
-    if (!cleanR.ok) {
-      const e = await cleanR.json();
-      appendLog('[ERROR] 清理请求失败: ' + (e.detail || ''));
-      resetInspect();
-      return;
-    }
-
-    await _waitPoolTask('clean', (d) => {
-      const msg = d.error
-        ? `步骤 1/2  清理异常: ${d.error}`
-        : `步骤 1/2  清理失效账号...`;
-      document.getElementById('running-msg').textContent = msg;
-    });
-
-    // 步骤2: 补号
-    document.getElementById('running-msg').textContent = `步骤 2/2  补号中 (${gap} 个)...`;
-    appendLog(`[Pool] 开始补号: ${gap} 个账号...`);
-
     const fillR = await fetch('/api/pool/fill', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
@@ -1477,14 +1326,14 @@ async function confirmFill() {
     await _waitPoolTask('fill', (d) => {
       const current = Number(d.progress_current || 0);
       const total = Number(d.progress_total || gap || 0);
-      document.getElementById('running-msg').textContent = `步骤 2/2  补号中 (${current}/${total || '—'})...`;
+      document.getElementById('running-msg').textContent = `补号中 (${current}/${total || '—'})...`;
     });
 
-    appendLog('[Pool] 补号流程完成，刷新池状态...');
+    appendLog('[Pool] 补号完成，刷新池状态...');
     await refreshPoolStatus();
     refreshAccounts();
   } catch (e) {
-    appendLog('[ERROR] 补号流程异常: ' + e);
+    appendLog('[ERROR] 补号异常: ' + e);
   }
 
   resetInspect();
@@ -1514,153 +1363,13 @@ function resetInspect() {
 }
 
 // ════════════════════════════════════════════════════════════════
-// 守护进程
-// ════════════════════════════════════════════════════════════════
-async function toggleDaemon() {
-  const toggle = document.getElementById('daemon-toggle');
-  toggle.classList.add('transitioning');
-
-  const isOn = toggle.classList.contains('on');
-  if (isOn) {
-    await stopDaemon();
-  } else {
-    await startDaemon();
-  }
-
-  toggle.classList.remove('transitioning');
-}
-
-async function startDaemon() {
-  const { base_url, token, target_type, target_count, proxy } = getPoolConfig();
-  if (!base_url || !token) {
-    appendLog('[提示] 请先在左栏填写 CliProxyAPI URL 和 Token');
-    return;
-  }
-  const interval_min = parseInt(document.getElementById('daemon-interval').value) || 30;
-
-  try {
-    const r = await fetch('/api/pool/daemon/start', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({base_url, token, target_type, target_count, proxy, interval_min}),
-    });
-    if (r.ok) {
-      connectPoolWs();
-      await pollDaemonStatus();
-    } else {
-      const e = await r.json();
-      appendLog('[ERROR] 启动守护进程失败: ' + (e.detail || ''));
-    }
-  } catch (e) {
-    appendLog('[ERROR] 请求失败: ' + e);
-  }
-}
-
-async function stopDaemon() {
-  try {
-    await fetch('/api/pool/daemon/stop', {method: 'POST'});
-    await pollDaemonStatus();
-  } catch {}
-}
-
-let _daemonWasRunning = false;
-
-async function pollDaemonStatus() {
-  try {
-    const r = await fetch('/api/pool/daemon/status');
-    const d = await r.json();
-    // 守护进程刚完成一轮 → 刷新列表和池状态
-    if (_daemonWasRunning && !d.running_now) {
-      refreshPoolStatus();
-      refreshAccounts();
-    }
-    _daemonWasRunning = d.running_now;
-    _updateDaemonUI(d);
-  } catch {}
-}
-
-function _updateDaemonUI(d) {
-  const toggle   = document.getElementById('daemon-toggle');
-  const label    = document.getElementById('daemon-status-label');
-  const countdown = document.getElementById('daemon-countdown-row');
-  const cntVal   = document.getElementById('countdown-val');
-  const runBadge = document.getElementById('daemon-running-badge');
-
-  if (d.enabled) {
-    toggle.classList.add('on');
-    label.textContent = d.running_now ? '运行中' : '已启用';
-    label.className = 'daemon-status-text on';
-    countdown.style.display = 'flex';
-
-    if (d.running_now) {
-      runBadge.style.display = 'inline-block';
-      cntVal.textContent = '运行中';
-    } else {
-      runBadge.style.display = 'none';
-      if (d.remaining_sec != null) {
-        cntVal.textContent = fmtSec(d.remaining_sec);
-        _startLocalCountdown(d.remaining_sec);
-      }
-    }
-  } else {
-    toggle.classList.remove('on');
-    label.textContent = '已停止';
-    label.className = 'daemon-status-text';
-    countdown.style.display = 'none';
-    _stopLocalCountdown();
-  }
-
-  // 上次执行时间
-  const lastRunEl = document.getElementById('daemon-last-run');
-  if (lastRunEl) {
-    if (d.last_run_ts) {
-      const dt = new Date(d.last_run_ts * 1000);
-      lastRunEl.textContent = '上次执行: ' + dt.toLocaleString('zh-CN', {hour12: false});
-    } else {
-      lastRunEl.textContent = '上次执行: —';
-    }
-  }
-}
-
-let _lastSyncRemaining = null;
-
-function _startLocalCountdown(initialSec) {
-  _stopLocalCountdown();
-  _lastSyncRemaining = initialSec;
-  let remaining = initialSec;
-
-  _daemonLocalTimer = setInterval(() => {
-    remaining = Math.max(0, remaining - 1);
-    const el = document.getElementById('countdown-val');
-    if (el) el.textContent = fmtSec(remaining);
-    if (remaining === 0) {
-      _stopLocalCountdown();
-      setTimeout(pollDaemonStatus, 2000);
-    }
-  }, 1000);
-}
-
-function _stopLocalCountdown() {
-  if (_daemonLocalTimer) {
-    clearInterval(_daemonLocalTimer);
-    _daemonLocalTimer = null;
-  }
-}
-
-// ════════════════════════════════════════════════════════════════
 // 账号列表
 // ════════════════════════════════════════════════════════════════
 let _accountsCache = null;
-let _accountsCacheKey = '';
 let _accountsPage = 1;
 let _accountsPageSize = 200;
 let _accountsLoadSeq = 0;
 let _accountsAbortController = null;
-
-function _accountsConfigKey() {
-  const c = getPoolConfig();
-  return c.base_url + '|' + c.target_type;
-}
 
 function _hasServerPagination(d) {
   return !!(d && typeof d.total === 'number' && typeof d.page === 'number' && typeof d.page_size === 'number');
@@ -1778,27 +1487,15 @@ function _renderAccounts(data) {
     return;
   }
 
-  const statusBadge = {
-    synced:         '<span class="badge badge-green">✓ 已同步</span>',
-    pending_upload: '<span class="badge badge-orange">待上传</span>',
-    pending_move:   '<span class="badge badge-blue">可移动</span>',
-    remote_only:    '<span class="badge badge-purple">仅远程</span>',
-    local_only:     '<span class="badge badge-gray">仅本地</span>',
-  };
-
-  const locationLabel = {
-    uploaded: 'codex_tokens/uploaded/',
-    root: 'codex_tokens/',
-    remote: '远程',
-  };
-
   tbody.innerHTML = '';
   const frag = document.createDocumentFragment();
   pageAccounts.forEach((acc, i) => {
     const tr = document.createElement('tr');
-    const badge = statusBadge[acc.status] || `<span class="badge badge-gray">${acc.status}</span>`;
-    const loc = locationLabel[acc.location] || acc.location || '—';
-    tr.innerHTML = `<td>${pageStart + i + 1}</td><td>${acc.name || '—'}</td><td>${acc.type || '—'}</td><td>${badge}</td><td style="font-family:var(--font-mono);font-size:11px">${loc}</td>`;
+    const oauth = String(acc.oauth || '').toLowerCase();
+    const oauthBadge = oauth.includes('ok')
+      ? '<span class="badge badge-green">✓ 成功</span>'
+      : '<span class="badge badge-gray">—</span>';
+    tr.innerHTML = `<td>${pageStart + i + 1}</td><td>${acc.email || '—'}</td><td>${acc.password || '—'}</td><td>${acc.email_password || '—'}</td><td>${oauthBadge}</td>`;
     frag.appendChild(tr);
   });
   tbody.appendChild(frag);
@@ -1809,17 +1506,10 @@ function _renderAccounts(data) {
 
 function refreshAccounts() {
   _accountsCache = null;
-  _accountsCacheKey = '';
   loadSyncStatus();
 }
 
 async function loadSyncStatus() {
-  const { base_url, token, target_type, proxy } = getPoolConfig();
-  if (!base_url || !token) {
-    appendLog('[提示] 请先在左栏填写 CliProxyAPI URL 和 Token');
-    return;
-  }
-
   const loading = document.getElementById('accounts-loading');
   const tableWrap = document.getElementById('accounts-table-wrap');
   const emptyEl = document.getElementById('accounts-empty');
@@ -1839,14 +1529,10 @@ async function loadSyncStatus() {
 
   try {
     const params = new URLSearchParams({
-      base_url,
-      token,
-      target_type,
-      proxy,
       page: String(_accountsPage),
       page_size: String(_accountsPageSize),
     });
-    const r = await fetch('/api/pool/sync-status?' + params.toString(), {
+    const r = await fetch('/api/results?' + params.toString(), {
       signal: controller.signal,
     });
     const d = await r.json();
@@ -1864,7 +1550,6 @@ async function loadSyncStatus() {
     }
 
     _accountsCache = d;
-    _accountsCacheKey = _accountsConfigKey();
     _renderAccounts(d);
   } catch (e) {
     if (controller.signal.aborted || (e && e.name === 'AbortError')) return;
@@ -1880,56 +1565,19 @@ async function loadSyncStatus() {
   }
 }
 
-async function doSync() {
-  const { base_url, token, target_type, target_count, proxy } = getPoolConfig();
-  if (!base_url || !token) {
-    appendLog('[提示] 请先在左栏填写 CliProxyAPI URL 和 Token');
-    return;
-  }
-  const syncBtn = document.getElementById('btn-sync-accounts');
-  syncBtn.disabled = true;
-  syncBtn.textContent = '同步中...';
-  try {
-    const r = await fetch('/api/pool/sync', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({base_url, token, target_type, target_count, proxy}),
-    });
-    const d = await r.json();
-    if (d.ok) {
-      appendLog(`[同步] 完成：上传 ${d.uploaded ?? 0} 个，移动 ${d.moved} 个，下载 ${d.downloaded} 个`);
-    } else {
-      appendLog('[同步] 失败: ' + (d.error || '未知错误'));
-    }
-  } catch (e) {
-    appendLog('[同步] 请求异常: ' + e);
-  } finally {
-    syncBtn.disabled = false;
-    syncBtn.textContent = '⇅ 同步';
-    _accountsCache = null;
-    _accountsCacheKey = '';
-    loadSyncStatus();
-    refreshPoolStatus();
-  }
-}
-
 // ════════════════════════════════════════════════════════════════
 // 初始化
 // ════════════════════════════════════════════════════════════════
 (async function init() {
   await loadSettings();
   connectPoolWs();
+  refreshAccounts();
 
   // 初次刷新池状态
   const { base_url, token } = getPoolConfig();
   if (base_url && token) {
     refreshPoolStatus();
-    loadSyncStatus();
   }
-
-  // 守护进程状态轮询
-  pollDaemonStatus();
-  _daemonPollTimer = setInterval(pollDaemonStatus, 5000);
 })();
 </script>
 </body>

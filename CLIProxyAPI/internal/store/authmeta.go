@@ -392,6 +392,9 @@ func (h *AuthMetaHook) OnResult(ctx context.Context, result cliproxyauth.Result)
 	}
 	auth, ok := manager.GetByID(result.AuthID)
 	if !ok || auth == nil {
+		if err := h.store.Delete(ctx, result.AuthID); err != nil {
+			log.WithError(err).Warn("auth meta hook result delete failed")
+		}
 		return
 	}
 	if err := h.store.UpsertAuth(ctx, auth, h.authDir); err != nil {

@@ -857,6 +857,59 @@ func (m *Manager) Update(ctx context.Context, auth *Auth) (*Auth, error) {
 	return auth.Clone(), nil
 }
 
+// RemoveAuth removes an auth from runtime state, scheduler state, model registry,
+// and persistent storage when it has a durable failure such as 401/token invalid.
+func (m *Manager) RemoveAuth(ctx context.Context, authID string) (*Auth, error) {
+	if m == nil {
+		return nil, nil
+	}
+	authID = strings.TrimSpace(authID)
+	if authID == "" {
+		return nil, nil
+	}
+
+	var removed *Auth
+	m.mu.Lock()
+	if auth, ok := m.auths[authID]; ok && auth != nil {
+		removed = auth.Clone()
+	}
+	delete(m.auths, authID)
+	delete(m.authInFlight, authID)
+	m.mu.Unlock()
+
+	if removed == nil {
+		return nil, nil
+	}
+
+	m.rebuildAPIKeyModelAliasFromRuntimeConfig()
+	if m.scheduler != nil {
+		m.scheduler.removeAuth(authID)
+	}
+	registry.GetGlobalRegistry().UnregisterClient(authID)
+
+	if m.store != nil && shouldDeletePersistedAuth(removed) {
+		if err := m.store.Delete(ctx, authID); err != nil {
+			return removed, err
+		}
+	}
+	return removed, nil
+}
+
+func shouldDeletePersistedAuth(auth *Auth) bool {
+	if auth == nil {
+		return false
+	}
+	if auth.Attributes != nil {
+		if v := strings.ToLower(strings.TrimSpace(auth.Attributes["runtime_only"])); v == "true" {
+			return false
+		}
+	}
+	if auth.Metadata == nil {
+		return false
+	}
+	return true
+}
+
 // Load resets manager state from the backing store.
 func (m *Manager) Load(ctx context.Context) error {
 	m.mu.Lock()
@@ -1601,6 +1654,14 @@ func waitForCooldown(ctx context.Context, wait time.Duration) error {
 // MarkResult records an execution result and notifies hooks.
 func (m *Manager) MarkResult(ctx context.Context, result Result) {
 	if result.AuthID == "" {
+		return
+	}
+	if !result.Success && statusCodeFromResult(result.Error) == http.StatusUnauthorized {
+		if _, err := m.RemoveAuth(ctx, result.AuthID); err != nil {
+			log.WithError(err).Warnf("failed to remove unauthorized auth %s", result.AuthID)
+		}
+		registry.GetGlobalRegistry().UnregisterClient(result.AuthID)
+		m.hook.OnResult(ctx, result)
 		return
 	}
 

@@ -86,6 +86,14 @@ OAUTH_REQUIRED = _as_bool(_CONFIG.get("oauth_required", True))
 OAUTH_ISSUER = _CONFIG["oauth_issuer"].rstrip("/")
 OAUTH_CLIENT_ID = _CONFIG["oauth_client_id"]
 OAUTH_REDIRECT_URI = _CONFIG["oauth_redirect_uri"]
+
+OAUTH_STEP_TIMEOUT = 45
+OAUTH_TOKEN_TIMEOUT = 90
+OAUTH_MAX_RETRIES = 2
+OAUTH_RETRY_BACKOFF_SEC = 1.5
+REGISTER_STEP_TIMEOUT = 45
+REGISTER_MAX_RETRIES = 2
+REGISTER_RETRY_BACKOFF_SEC = 1.0
 AK_FILE = _CONFIG["ak_file"]
 RK_FILE = _CONFIG["rk_file"]
 TOKEN_JSON_DIR = _CONFIG["token_json_dir"]
@@ -668,6 +676,34 @@ class ChatGPTRegister:
         with _print_lock:
             print(f"{prefix}{msg}")
 
+    def _oauth_request(self, method: str, url: str, *, timeout: int = OAUTH_STEP_TIMEOUT, **kwargs):
+        last_err = None
+        for attempt in range(1, OAUTH_MAX_RETRIES + 1):
+            try:
+                return self.session.request(method, url, timeout=timeout, impersonate=self.impersonate, **kwargs)
+            except Exception as e:
+                last_err = e
+                self._print(
+                    f"[OAuth] {method.upper()} {url[:120]} 异常(第 {attempt}/{OAUTH_MAX_RETRIES} 次): {e}"
+                )
+                if attempt < OAUTH_MAX_RETRIES:
+                    time.sleep(OAUTH_RETRY_BACKOFF_SEC * attempt)
+        raise last_err
+
+    def _register_request(self, method: str, url: str, *, timeout: int = REGISTER_STEP_TIMEOUT, **kwargs):
+        last_err = None
+        for attempt in range(1, REGISTER_MAX_RETRIES + 1):
+            try:
+                return self.session.request(method, url, timeout=timeout, impersonate=self.impersonate, **kwargs)
+            except Exception as e:
+                last_err = e
+                self._print(
+                    f"[注册链路] {method.upper()} {url[:120]} 异常(第 {attempt}/{REGISTER_MAX_RETRIES} 次): {e}"
+                )
+                if attempt < REGISTER_MAX_RETRIES:
+                    time.sleep(REGISTER_RETRY_BACKOFF_SEC * attempt)
+        raise last_err
+
     # ==================== DuckMail 临时邮箱 ====================
 
     def _create_duckmail_session(self):
@@ -881,7 +917,7 @@ class ChatGPTRegister:
         headers = {"Content-Type": "application/json", "Accept": "application/json",
                     "Referer": f"{self.AUTH}/create-account/password", "Origin": self.AUTH}
         headers.update(_make_trace_headers())
-        r = self.session.post(url, json={"username": email, "password": password}, headers=headers)
+        r = self._register_request("POST", url, json={"username": email, "password": password}, headers=headers)
         try: data = r.json()
         except Exception: data = {"text": r.text[:500]}
         self._log("4. Register", "POST", url, r.status_code, data)
@@ -889,7 +925,7 @@ class ChatGPTRegister:
 
     def send_otp(self):
         url = f"{self.AUTH}/api/accounts/email-otp/send"
-        r = self.session.get(url, headers={
+        r = self._register_request("GET", url, headers={
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Referer": f"{self.AUTH}/create-account/password", "Upgrade-Insecure-Requests": "1",
         }, allow_redirects=True)
@@ -903,7 +939,7 @@ class ChatGPTRegister:
         headers = {"Content-Type": "application/json", "Accept": "application/json",
                     "Referer": f"{self.AUTH}/email-verification", "Origin": self.AUTH}
         headers.update(_make_trace_headers())
-        r = self.session.post(url, json={"code": code}, headers=headers)
+        r = self._register_request("POST", url, json={"code": code}, headers=headers)
         try: data = r.json()
         except Exception: data = {"text": r.text[:500]}
         self._log("6. Validate OTP", "POST", url, r.status_code, data)
@@ -914,7 +950,7 @@ class ChatGPTRegister:
         headers = {"Content-Type": "application/json", "Accept": "application/json",
                     "Referer": f"{self.AUTH}/about-you", "Origin": self.AUTH}
         headers.update(_make_trace_headers())
-        r = self.session.post(url, json={"name": name, "birthdate": birthdate}, headers=headers)
+        r = self._register_request("POST", url, json={"name": name, "birthdate": birthdate}, headers=headers)
         try: data = r.json()
         except Exception: data = {"text": r.text[:500]}
         self._log("7. Create Account", "POST", url, r.status_code, data)
@@ -930,7 +966,7 @@ class ChatGPTRegister:
         if not url:
             self._print("[!] No callback URL, skipping.")
             return None, None
-        r = self.session.get(url, headers={
+        r = self._register_request("GET", url, headers={
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Upgrade-Insecure-Requests": "1",
         }, allow_redirects=True)
@@ -1067,12 +1103,12 @@ class ChatGPTRegister:
             headers["Referer"] = referer
 
         try:
-            resp = self.session.get(
+            resp = self._oauth_request(
+                "GET",
                 url,
                 headers=headers,
                 allow_redirects=True,
-                timeout=30,
-                impersonate=self.impersonate,
+                timeout=OAUTH_STEP_TIMEOUT,
             )
             final_url = str(resp.url)
             code = _extract_code_from_url(final_url)
@@ -1115,12 +1151,12 @@ class ChatGPTRegister:
 
         for hop in range(max_hops):
             try:
-                resp = self.session.get(
+                resp = self._oauth_request(
+                    "GET",
                     current_url,
                     headers=headers,
                     allow_redirects=False,
-                    timeout=30,
-                    impersonate=self.impersonate,
+                    timeout=OAUTH_STEP_TIMEOUT,
                 )
             except Exception as e:
                 maybe_localhost = re.search(r'(https?://localhost[^\s\'\"]+)', str(e))
@@ -1186,13 +1222,13 @@ class ChatGPTRegister:
         }
         h.update(_make_trace_headers())
 
-        resp = self.session.post(
+        resp = self._oauth_request(
+            "POST",
             f"{OAUTH_ISSUER}/api/accounts/workspace/select",
             json={"workspace_id": workspace_id},
             headers=h,
             allow_redirects=False,
-            timeout=30,
-            impersonate=self.impersonate,
+            timeout=OAUTH_STEP_TIMEOUT,
         )
         self._print(f"[OAuth] workspace/select -> {resp.status_code}")
 
@@ -1240,13 +1276,13 @@ class ChatGPTRegister:
             if ws_next:
                 h_org["Referer"] = ws_next if ws_next.startswith("http") else f"{OAUTH_ISSUER}{ws_next}"
 
-            resp_org = self.session.post(
+            resp_org = self._oauth_request(
+                "POST",
                 f"{OAUTH_ISSUER}/api/accounts/organization/select",
                 json=org_body,
                 headers=h_org,
                 allow_redirects=False,
-                timeout=30,
-                impersonate=self.impersonate,
+                timeout=OAUTH_STEP_TIMEOUT,
             )
             self._print(f"[OAuth] organization/select -> {resp_org.status_code}")
             if resp_org.status_code in (301, 302, 303, 307, 308):
@@ -1325,7 +1361,8 @@ class ChatGPTRegister:
         def _bootstrap_oauth_session():
             self._print("[OAuth] 1/7 GET /oauth/authorize")
             try:
-                r = self.session.get(
+                r = self._oauth_request(
+                    "GET",
                     authorize_url,
                     headers={
                         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -1334,8 +1371,7 @@ class ChatGPTRegister:
                         "User-Agent": self.ua,
                     },
                     allow_redirects=True,
-                    timeout=30,
-                    impersonate=self.impersonate,
+                    timeout=OAUTH_STEP_TIMEOUT,
                 )
             except Exception as e:
                 self._print(f"[OAuth] /oauth/authorize 异常: {e}")
@@ -1352,7 +1388,8 @@ class ChatGPTRegister:
                 self._print("[OAuth] 未拿到 login_session，尝试访问 oauth2 auth 入口")
                 oauth2_url = f"{OAUTH_ISSUER}/api/oauth/oauth2/auth"
                 try:
-                    r2 = self.session.get(
+                    r2 = self._oauth_request(
+                        "GET",
                         oauth2_url,
                         headers={
                             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -1362,8 +1399,7 @@ class ChatGPTRegister:
                         },
                         params=authorize_params,
                         allow_redirects=True,
-                        timeout=30,
-                        impersonate=self.impersonate,
+                        timeout=OAUTH_STEP_TIMEOUT,
                     )
                     final_url = str(r2.url)
                     redirects2 = len(getattr(r2, "history", []) or [])
@@ -1393,13 +1429,13 @@ class ChatGPTRegister:
             headers_continue["openai-sentinel-token"] = sentinel_authorize
 
             try:
-                return self.session.post(
+                return self._oauth_request(
+                    "POST",
                     f"{OAUTH_ISSUER}/api/accounts/authorize/continue",
                     json={"username": {"kind": "email", "value": email}},
                     headers=headers_continue,
-                    timeout=30,
+                    timeout=OAUTH_STEP_TIMEOUT,
                     allow_redirects=False,
-                    impersonate=self.impersonate,
                 )
             except Exception as e:
                 self._print(f"[OAuth] authorize/continue 异常: {e}")
@@ -1459,13 +1495,13 @@ class ChatGPTRegister:
         headers_verify["openai-sentinel-token"] = sentinel_pwd
 
         try:
-            resp_verify = self.session.post(
+            resp_verify = self._oauth_request(
+                "POST",
                 f"{OAUTH_ISSUER}/api/accounts/password/verify",
                 json={"password": password},
                 headers=headers_verify,
-                timeout=30,
+                timeout=OAUTH_STEP_TIMEOUT,
                 allow_redirects=False,
-                impersonate=self.impersonate,
             )
         except Exception as e:
             self._print(f"[OAuth] password/verify 异常: {e}")
@@ -1529,13 +1565,13 @@ class ChatGPTRegister:
                     tried_codes.add(otp_code)
                     self._print(f"[OAuth] 尝试 OTP: {otp_code}")
                     try:
-                        resp_otp = self.session.post(
+                        resp_otp = self._oauth_request(
+                            "POST",
                             f"{OAUTH_ISSUER}/api/accounts/email-otp/validate",
                             json={"code": otp_code},
                             headers=headers_otp,
-                            timeout=30,
+                            timeout=OAUTH_STEP_TIMEOUT,
                             allow_redirects=False,
-                            impersonate=self.impersonate,
                         )
                     except Exception as e:
                         self._print(f"[OAuth] email-otp/validate 异常: {e}")
@@ -1607,7 +1643,8 @@ class ChatGPTRegister:
             return None
 
         self._print("[OAuth] 7/7 POST /oauth/token")
-        token_resp = self.session.post(
+        token_resp = self._oauth_request(
+            "POST",
             f"{OAUTH_ISSUER}/oauth/token",
             headers={"Content-Type": "application/x-www-form-urlencoded", "User-Agent": self.ua},
             data={
@@ -1617,8 +1654,7 @@ class ChatGPTRegister:
                 "client_id": OAUTH_CLIENT_ID,
                 "code_verifier": code_verifier,
             },
-            timeout=60,
-            impersonate=self.impersonate,
+            timeout=OAUTH_TOKEN_TIMEOUT,
         )
         self._print(f"[OAuth] /oauth/token -> {token_resp.status_code}")
 

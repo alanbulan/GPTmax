@@ -1060,27 +1060,17 @@ def run_pool_fill(
     target_count: int = 0,
     target_type: str = "codex",
 ) -> dict:
-    """补号：注册新账号并尝试上传到账号池"""
+    """纯注册上传：只注册新账号并上传到账号池，不做探测/清理/同步"""
 
     def log(msg):
         if log_cb:
             log_cb(msg)
 
     log(f"[Pool] 开始补号: 目标数量={fill_count}")
-
-    # 先同步本地存量到远程，减少实际需要注册的数量（跳过 remote_only 下载）
-    pre_uploaded = 0
-    if base_url and pool_token:
-        log("[Pool] 先同步本地存量到远程...")
-        sync_r = sync_local_remote(base_url, pool_token, target_type, config, proxy, log_cb,
-                                   target_count=target_count, upload_only=True)
-        pre_uploaded = sync_r.get("uploaded", 0)
-        if pre_uploaded > 0:
-            fill_count = max(0, fill_count - pre_uploaded)
-            log(f"[Pool] 存量上传 {pre_uploaded} 个，剩余需注册 {fill_count} 个")
+    log("[Pool] 当前模式: 纯注册上传，不做探测/清理/同步")
 
     if fill_count == 0:
-        return {"success": 0, "fail": 0, "total": 0, "uploaded": pre_uploaded}
+        return {"success": 0, "fail": 0, "total": 0, "uploaded": 0}
 
     result = run_batch_register(
         count=fill_count,
@@ -1096,9 +1086,9 @@ def run_pool_fill(
     if registered > 0 and base_url and pool_token:
         log("[Pool] 尝试上传新 token 到账号池...")
         uploaded = _upload_tokens_to_pool(base_url, pool_token, config, proxy, log_cb)
-        result["uploaded"] = uploaded + pre_uploaded
+        result["uploaded"] = uploaded
     else:
-        result["uploaded"] = pre_uploaded
+        result["uploaded"] = 0
 
     return result
 
